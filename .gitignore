@@ -1,0 +1,17 @@
+# Banco SQLite gerado localmente
+dados/*.db
+dados/*.db-*
+!dados/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.python-version
+.venv/
+venv/
+
+# Editores e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
