@@ -208,11 +208,3 @@ Sequência recomendada:
 | 3 | `nivel_3_avancado.sql` | Subqueries, CTEs e window functions |
 | 4 | `nivel_4_kpis_negocio.sql` | Indicadores de negócio e análise comercial |
 | 5 | `nivel_5_projeto_final.sql` | Relatório executivo usando views e rankings |
-
-## Observações para publicar no GitHub
-
-- O arquivo `dados/empresa.db` é gerado pelo `setup.py` e está ignorado no Git.
-- Os arquivos `.sql` devem ser versionados, pois são o conteúdo principal do
-  estudo.
-- Se quiser permitir uso livre por outras pessoas, escolha uma licença antes de
-  publicar o repositório.
