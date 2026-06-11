@@ -63,11 +63,69 @@ Uma forma simples de executar os exercícios é usar a extensão **SQLite** de
 
 ## Modelo de dados
 
+O banco simula uma operação comercial simples: uma empresa tem departamentos e
+funcionários, vende produtos para clientes e registra cada venda em pedidos com
+itens.
+
 ```text
 departamentos 1 ── N funcionarios
 clientes      1 ── N pedidos
 pedidos       1 ── N itens_pedido
 produtos      1 ── N itens_pedido
+```
+
+```mermaid
+erDiagram
+    departamentos ||--o{ funcionarios : possui
+    clientes ||--o{ pedidos : realiza
+    pedidos ||--o{ itens_pedido : contem
+    produtos ||--o{ itens_pedido : vendido_em
+
+    departamentos {
+        INTEGER id PK
+        TEXT nome
+        TEXT cidade
+    }
+
+    funcionarios {
+        INTEGER id PK
+        TEXT nome
+        TEXT cargo
+        REAL salario
+        TEXT data_admissao
+        INTEGER departamento_id FK
+    }
+
+    clientes {
+        INTEGER id PK
+        TEXT nome
+        TEXT cidade
+        TEXT estado
+        TEXT segmento
+    }
+
+    pedidos {
+        INTEGER id PK
+        INTEGER cliente_id FK
+        TEXT data
+        TEXT status
+    }
+
+    itens_pedido {
+        INTEGER id PK
+        INTEGER pedido_id FK
+        INTEGER produto_id FK
+        INTEGER quantidade
+        REAL preco_unit
+    }
+
+    produtos {
+        INTEGER id PK
+        TEXT nome
+        TEXT categoria
+        REAL preco
+        REAL custo
+    }
 ```
 
 ## Tabelas disponíveis
@@ -80,6 +138,57 @@ produtos      1 ── N itens_pedido
 | produtos        | 16        | Hardware, software, acessórios e móveis    |
 | pedidos         | 35        | Pedidos entre janeiro/2024 e janeiro/2025  |
 | itens_pedido    | 56        | Produtos, quantidades e preços por pedido  |
+
+## Como entender o banco
+
+| Tabela | O que representa | Campos mais usados |
+|--------|------------------|--------------------|
+| `departamentos` | Áreas da empresa | `id`, `nome`, `cidade` |
+| `funcionarios` | Pessoas que trabalham na empresa | `nome`, `cargo`, `salario`, `departamento_id` |
+| `clientes` | Pessoas e empresas que compram | `nome`, `estado`, `segmento` |
+| `pedidos` | Cabeçalho de cada compra | `cliente_id`, `data`, `status` |
+| `itens_pedido` | Produtos dentro de cada pedido | `pedido_id`, `produto_id`, `quantidade`, `preco_unit` |
+| `produtos` | Catálogo de produtos | `nome`, `categoria`, `preco`, `custo` |
+
+Regras úteis para os exercícios:
+
+- O valor vendido de um item é `quantidade * preco_unit`.
+- O custo de um item é `quantidade * custo`.
+- O lucro de um item é `quantidade * (preco_unit - custo)`.
+- Para análises de venda real, use normalmente `pedidos.status = 'Entregue'`.
+- `pedidos` guarda a compra; `itens_pedido` guarda os produtos dessa compra.
+
+### Exemplo de pedido
+
+O pedido `1` mostra como as tabelas se conectam:
+
+| pedido | cliente | data | status | produto | quantidade | preço unitário | total do item |
+|--------|---------|------|--------|---------|------------|----------------|---------------|
+| 1 | Empresa Alpha Ltda | 2024-01-08 | Entregue | Mouse Sem Fio | 3 | 180.00 | 540.00 |
+| 1 | Empresa Alpha Ltda | 2024-01-08 | Entregue | Notebook Pro 15 | 2 | 4500.00 | 9000.00 |
+
+Query usada para chegar nesse resultado:
+
+```sql
+SELECT p.id AS pedido_id,
+       c.nome AS cliente,
+       p.data,
+       p.status,
+       pr.nome AS produto,
+       ip.quantidade,
+       ip.preco_unit,
+       ROUND(ip.quantidade * ip.preco_unit, 2) AS total_item
+FROM pedidos p
+JOIN clientes c ON c.id = p.cliente_id
+JOIN itens_pedido ip ON ip.pedido_id = p.id
+JOIN produtos pr ON pr.id = ip.produto_id
+WHERE p.id = 1
+ORDER BY pr.nome;
+```
+
+Esse mesmo padrão de raciocínio aparece nos níveis 2, 4 e 5: partir de
+`pedidos`, conectar cliente e itens, depois calcular receita, custo, lucro ou
+ranking.
 
 ## Roteiro sugerido
 
