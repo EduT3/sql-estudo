@@ -106,15 +106,18 @@
             </section>
 
             <div class="exercise-actions">
-              <a id="exercise-file" class="primary-button" href="#">Abrir exercício</a>
-              <a id="answer-file" class="ghost-button disabled-link" href="#" aria-disabled="true">
-                Abrir gabarito
-              </a>
+              <button id="exercise-file" class="primary-button" type="button">
+                Ver enunciado completo
+              </button>
+              <button id="answer-file" class="ghost-button disabled-link" type="button" aria-disabled="true">
+                Ver gabarito
+              </button>
               <label class="attempt-check">
                 <input id="attempt-check" type="checkbox">
                 Tentativa salva
               </label>
             </div>
+            <div id="resource-viewer" class="resource-viewer compact" aria-live="polite"></div>
 
             <label class="notes-box">
               <span>Anotações da tentativa</span>

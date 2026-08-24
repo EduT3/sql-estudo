@@ -1,19 +1,20 @@
 # Ambiente de Estudo SQL
 
 Projeto de estudo com SQLite para praticar consultas SQL em uma base fictícia
-de uma empresa de tecnologia. O ambiente tem duas formas de uso:
+de uma empresa de tecnologia. A experiência principal é pela web: teoria,
+exemplos, exercícios, execução SQL e histórico ficam no próprio site.
 
-- **Web**: site estático com páginas separadas, trilha de estudo e laboratório
-  SQL executando no navegador.
+- **Web**: site estático com páginas separadas, trilha de estudo completa,
+  cadernos SQL lidos dentro da página e laboratório SQL executando no navegador.
 - **Local**: banco SQLite `dados/empresa.db`, gerado pelo `setup.py`, para uso
-  no VS Code, SQLite Studio ou outra ferramenta.
+  no VS Code, SQLite Studio ou outra ferramenta, como opção complementar.
 
 ## Páginas do site
 
 | Página | Arquivo | Função |
 |--------|---------|--------|
 | Início | `index.html` | Visão geral do ambiente e atalhos |
-| Trilha | `trilha.html` | Mapa de fases e progresso por etapa, conectando Notion e repositório |
+| Trilha | `trilha.html` | Curso dentro do site, com aulas por nível, exemplos, sequência de prática e progresso |
 | Laboratório | `laboratorio.html` | Exercícios, dicas, correção assistida, histórico local, timer e execução SQL segura |
 | Base | `base.html` | Modelo de dados, tabelas e fontes da trilha |
 
@@ -34,6 +35,8 @@ Regras do laboratório:
 
 Recursos de estudo:
 
+- aulas completas por nível na página **Trilha**;
+- cadernos SQL abertos dentro do site, sem precisar baixar arquivo;
 - dicas graduais por exercício;
 - correção assistida após cada execução;
 - leitura simples do resultado retornado;
@@ -85,18 +88,23 @@ sql-estudo/
 ## Como usar pela web
 
 1. Abra o site publicado na Vercel.
-2. Entre em **Trilha** para acompanhar a sequência de estudo.
-3. Entre em **Laboratório** para escolher nível e exercício.
-4. Leia o objetivo, abra dicas se precisar e escreva a consulta no editor SQL.
-5. Execute com o botão `Executar` ou com `Ctrl+Enter`.
-6. Revise o status automático: `Ok`, `Quase` ou `Revisar`.
-7. Use o histórico local para recuperar tentativas anteriores.
-8. Marque ou confirme a tentativa antes de abrir o gabarito.
+2. Entre em **Trilha** para estudar o conteúdo do nível: conceitos, exemplo,
+   erros comuns e sequência de exercícios.
+3. Use **Ler caderno SQL aqui** se quiser ver o material bruto dentro da página.
+4. Clique em **Praticar no laboratório** para abrir o nível certo.
+5. Leia o objetivo, abra dicas se precisar e escreva a consulta no editor SQL.
+6. Execute com o botão `Executar` ou com `Ctrl+Enter`.
+7. Revise o status automático: `Ok`, `Quase` ou `Revisar`.
+8. Use o histórico local para recuperar tentativas anteriores.
+9. Marque ou confirme a tentativa antes de abrir o gabarito dentro do site.
 
 As anotações, dicas abertas, tentativas, histórico e progresso ficam no
 armazenamento local do navegador.
 
-## Como usar localmente
+## Como usar localmente como complemento
+
+O uso local não é necessário para estudar pelo site. Ele serve apenas se você
+quiser praticar também no VS Code, SQLite Studio ou outra ferramenta.
 
 ### 1. Pré-requisito
 
@@ -235,12 +243,12 @@ ranking.
 
 ## Roteiro sugerido
 
-1. Abra a página **Trilha** e marque o ponto atual.
-2. Vá para **Laboratório** e resolva `nivel_1_basico.sql`.
+1. Abra a página **Trilha** e estude a aula do nível atual.
+2. Leia o exemplo guiado e a sequência de prática.
 3. Execute a consulta no editor web ou localmente no VS Code.
 4. Registre hipótese, granularidade, validação e dúvidas.
 5. Marque `Tentativa salva`.
-6. Confira o gabarito.
+6. Confira o gabarito dentro do site.
 7. Repita o fluxo para os níveis 2, 3, 4 e 5.
 
 Sequência recomendada:

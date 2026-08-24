@@ -129,48 +129,183 @@ const levels = [
   },
 ];
 
+const levelLessons = {
+  "nivel-1": {
+    summary: "Primeiro contato com leitura de tabelas: escolher colunas, filtrar linhas, ordenar resultados e limitar retornos.",
+    learn: [
+      "SELECT define quais colunas aparecem no resultado; evite SELECT * quando a pergunta pede campos especificos.",
+      "WHERE filtra linhas antes da exibicao e funciona com operadores como =, >, BETWEEN, IN e LIKE.",
+      "ORDER BY organiza a leitura e LIMIT ajuda a inspecionar amostras ou rankings curtos.",
+      "Datas no SQLite estao em texto no formato YYYY-MM-DD, entao filtros cronologicos precisam seguir esse padrao.",
+    ],
+    exampleTitle: "Consulta guiada: produtos caros",
+    exampleSql: `SELECT nome, categoria, preco
+FROM produtos
+WHERE preco > 1000
+ORDER BY preco DESC;`,
+    practice: "Resolva do exercicio 1 ao 10 alternando entre filtros simples, filtros combinados e ordenacao.",
+    mistakes: [
+      "Filtrar texto sem aspas simples.",
+      "Usar ORDER BY antes do WHERE.",
+      "Esquecer que BETWEEN inclui as duas pontas.",
+    ],
+  },
+  "nivel-2": {
+    summary: "Aqui voce sai de tabelas isoladas e passa a responder perguntas que dependem de relacionamento e agregacao.",
+    learn: [
+      "JOIN conecta tabelas por chaves; primeiro confirme o caminho entre elas antes de calcular indicadores.",
+      "GROUP BY muda a granularidade do resultado: uma linha por departamento, cliente, mes ou categoria.",
+      "COUNT, SUM, AVG, MIN e MAX resumem linhas; toda coluna solta precisa estar no GROUP BY.",
+      "HAVING filtra grupos depois da agregacao; WHERE filtra linhas antes do agrupamento.",
+    ],
+    exampleTitle: "Consulta guiada: receita por categoria",
+    exampleSql: `SELECT pr.categoria,
+       ROUND(SUM(ip.quantidade * ip.preco_unit), 2) AS receita
+FROM pedidos p
+JOIN itens_pedido ip ON ip.pedido_id = p.id
+JOIN produtos pr ON pr.id = ip.produto_id
+WHERE p.status = 'Entregue'
+GROUP BY pr.categoria
+ORDER BY receita DESC;`,
+    practice: "Use o laboratorio para validar se cada agrupamento esta no nivel certo antes de olhar o gabarito.",
+    mistakes: [
+      "Somar itens sem filtrar pedidos entregues quando a pergunta fala de venda realizada.",
+      "Juntar tabelas sem ON correto e multiplicar linhas.",
+      "Usar HAVING para filtros que deveriam estar no WHERE.",
+    ],
+  },
+  "nivel-3": {
+    summary: "Modulo de raciocinio analitico: subconsultas, CTEs e janelas para comparar linhas sem perder detalhe.",
+    learn: [
+      "Subqueries ajudam quando um filtro depende de outro calculo, como salario acima da media.",
+      "CTEs com WITH deixam consultas longas mais legiveis e facilitam a validacao passo a passo.",
+      "Window functions calculam ranking, acumulado e variacao sem reduzir as linhas como o GROUP BY.",
+      "LAG, ROW_NUMBER, RANK e SUM() OVER resolvem comparacoes temporais e rankings por grupo.",
+    ],
+    exampleTitle: "Consulta guiada: variacao mensal com LAG",
+    exampleSql: `WITH receita_mensal AS (
+  SELECT strftime('%Y-%m', p.data) AS mes,
+         ROUND(SUM(ip.quantidade * ip.preco_unit), 2) AS receita
+  FROM pedidos p
+  JOIN itens_pedido ip ON ip.pedido_id = p.id
+  WHERE p.status = 'Entregue'
+  GROUP BY mes
+)
+SELECT mes,
+       receita,
+       receita - LAG(receita) OVER (ORDER BY mes) AS variacao
+FROM receita_mensal;`,
+    practice: "Monte a consulta em camadas: primeiro a base, depois o calculo e por ultimo a janela.",
+    mistakes: [
+      "Misturar GROUP BY e janela sem definir a granularidade antes.",
+      "Usar ranking sem ORDER BY dentro do OVER.",
+      "Criar CTE grande demais antes de testar partes menores.",
+    ],
+  },
+  "nivel-4": {
+    summary: "Transforma SQL em leitura de negocio: receita, custo, lucro, margem, ticket medio e classificacao de clientes.",
+    learn: [
+      "Receita do item = quantidade * preco_unit; custo = quantidade * custo; lucro = receita - custo.",
+      "Margem precisa de denominador claro, normalmente lucro dividido por receita.",
+      "Ticket medio pode ser media por pedido, cliente ou segmento; a pergunta define a granularidade.",
+      "CASE cria faixas de negocio e deixa a consulta mais proxima de uma regra de BI.",
+    ],
+    exampleTitle: "Consulta guiada: lucro e margem por categoria",
+    exampleSql: `SELECT pr.categoria,
+       ROUND(SUM(ip.quantidade * ip.preco_unit), 2) AS receita,
+       ROUND(SUM(ip.quantidade * pr.custo), 2) AS custo,
+       ROUND(SUM(ip.quantidade * (ip.preco_unit - pr.custo)), 2) AS lucro,
+       ROUND(SUM(ip.quantidade * (ip.preco_unit - pr.custo)) * 100.0 /
+             SUM(ip.quantidade * ip.preco_unit), 2) AS margem_pct
+FROM pedidos p
+JOIN itens_pedido ip ON ip.pedido_id = p.id
+JOIN produtos pr ON pr.id = ip.produto_id
+WHERE p.status = 'Entregue'
+GROUP BY pr.categoria
+ORDER BY lucro DESC;`,
+    practice: "Depois de executar, escreva uma interpretacao curta: o que esse KPI mudaria em uma decisao?",
+    mistakes: [
+      "Confundir preco cadastrado do produto com preco_unit registrado no pedido.",
+      "Calcular margem sem proteger a regra do denominador.",
+      "Comparar clientes sem separar segmento, status ou periodo.",
+    ],
+  },
+  "nivel-5": {
+    summary: "Fechamento em formato de portfolio: consultas reutilizaveis, rankings, RFM simplificado e painel executivo.",
+    learn: [
+      "Comece por uma base detalhada de vendas e reaproveite essa camada nos relatorios.",
+      "RFM resume recencia, frequencia e valor para classificar clientes com criterios de negocio.",
+      "Rankings precisam declarar o criterio principal e como empatar resultados.",
+      "Um painel executivo deve responder poucas perguntas com indicadores consistentes e verificaveis.",
+    ],
+    exampleTitle: "Consulta guiada: base detalhada de vendas",
+    exampleSql: `SELECT p.id AS pedido_id,
+       p.data,
+       p.status,
+       c.nome AS cliente,
+       c.segmento,
+       c.estado,
+       pr.nome AS produto,
+       pr.categoria,
+       ip.quantidade,
+       ip.preco_unit,
+       ROUND(ip.quantidade * ip.preco_unit, 2) AS receita_item,
+       ROUND(ip.quantidade * (ip.preco_unit - pr.custo), 2) AS lucro_item
+FROM pedidos p
+JOIN clientes c ON c.id = p.cliente_id
+JOIN itens_pedido ip ON ip.pedido_id = p.id
+JOIN produtos pr ON pr.id = ip.produto_id;`,
+    practice: "Use os exercicios finais como uma entrega: consulta, resultado, interpretacao e proximo passo.",
+    mistakes: [
+      "Montar o painel antes de validar a base detalhada.",
+      "Criar classificacoes sem explicar os criterios.",
+      "Misturar pedidos cancelados com vendas entregues sem deixar a regra clara.",
+    ],
+  },
+};
+
 const timeline = [
   {
     id: "diag",
     title: "Diagnostico e ambiente",
-    text: "Gerar a base SQLite local, confirmar tabelas e abrir o fluxo de pratica.",
-    source: "README",
-    href: "README.md",
+    text: "Entender a base ficticia, as tabelas e como o laboratorio web executa consultas em memoria.",
+    source: "Base",
+    href: "base.html",
   },
   {
     id: "fundamentos",
     title: "Fundamentos SQL",
-    text: "Praticar filtros, ordenacao e leitura de tabelas antes de avancar.",
-    source: "Nivel 1",
-    href: "exercicios/nivel_1_basico.sql",
+    text: "Estudar SELECT, WHERE, ORDER BY e LIMIT dentro da pagina antes de praticar.",
+    source: "Aula",
+    href: "#aulas-nivel-1",
   },
   {
     id: "joins",
     title: "Agregacoes e JOINs",
-    text: "Conectar tabelas, agrupar resultados e validar a granularidade.",
-    source: "Nivel 2",
-    href: "exercicios/nivel_2_group_join.sql",
+    text: "Conectar tabelas, agrupar resultados e validar a granularidade no laboratorio.",
+    source: "Aula",
+    href: "#aulas-nivel-2",
   },
   {
     id: "analitico",
     title: "Consultas analiticas",
     text: "Usar subqueries, CTEs e funcoes de janela para responder perguntas de negocio.",
-    source: "Nivel 3",
-    href: "exercicios/nivel_3_avancado.sql",
+    source: "Aula",
+    href: "#aulas-nivel-3",
   },
   {
     id: "kpis",
     title: "KPIs de negocio",
-    text: "Calcular receita, custo, lucro, margem, ticket medio e classificacoes.",
-    source: "Nivel 4",
-    href: "exercicios/nivel_4_kpis_negocio.sql",
+    text: "Calcular receita, custo, lucro, margem, ticket medio e classificacoes com regras claras.",
+    source: "Aula",
+    href: "#aulas-nivel-4",
   },
   {
     id: "portfolio",
     title: "Entrega de portfolio",
-    text: "Fechar com views, RFM, ranking e painel executivo versionados no GitHub.",
-    source: "Nivel 5",
-    href: "exercicios/nivel_5_projeto_final.sql",
+    text: "Fechar com RFM, ranking e painel executivo sem depender de preparacao externa.",
+    source: "Aula",
+    href: "#aulas-nivel-5",
   },
 ];
 
@@ -410,6 +545,112 @@ function renderStudyMap() {
     .join("");
 }
 
+function renderCourseModules() {
+  const container = document.querySelector("#course-modules");
+  if (!container) return;
+
+  container.innerHTML = levels
+    .map((level) => {
+      const lesson = levelLessons[level.id];
+      return `
+        <article id="aulas-${level.id}" class="course-card">
+          <div class="course-card-header">
+            <div>
+              <p class="eyebrow">${level.title}</p>
+              <h3>${level.focus}</h3>
+            </div>
+            <span>${level.exercises.length} exercicios</span>
+          </div>
+          <p>${lesson.summary}</p>
+          <div class="course-split">
+            <div>
+              <strong>O que estudar</strong>
+              <ul>
+                ${lesson.learn.map((item) => `<li>${item}</li>`).join("")}
+              </ul>
+            </div>
+            <div>
+              <strong>Erros comuns</strong>
+              <ul>
+                ${lesson.mistakes.map((item) => `<li>${item}</li>`).join("")}
+              </ul>
+            </div>
+          </div>
+          <div class="lesson-example">
+            <span>${lesson.exampleTitle}</span>
+            <pre><code>${escapeHtml(lesson.exampleSql)}</code></pre>
+          </div>
+          <div class="exercise-outline">
+            <strong>Sequencia de pratica</strong>
+            <ol>
+              ${level.exercises.map((exercise) => `<li>${exercise}</li>`).join("")}
+            </ol>
+          </div>
+          <p class="practice-note">${lesson.practice}</p>
+          <div class="course-actions">
+            <a class="primary-button" href="laboratorio.html?level=${level.id}">Praticar no laboratorio</a>
+            <button class="ghost-button course-resource-button" type="button" data-path="${level.file}" data-title="${level.title} - caderno de exercicios" data-target="#course-resource-${level.id}">
+              Ler caderno SQL aqui
+            </button>
+          </div>
+          <div id="course-resource-${level.id}" class="resource-viewer compact" aria-live="polite"></div>
+        </article>
+      `;
+    })
+    .join("");
+
+  container.querySelectorAll(".course-resource-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      showResource(
+        button.dataset.path,
+        button.dataset.title,
+        button.dataset.target,
+      );
+    });
+  });
+}
+
+async function showResource(path, title, targetSelector = "#resource-viewer") {
+  const container = document.querySelector(targetSelector);
+  if (!container || !path) return;
+
+  container.classList.add("is-open");
+  container.innerHTML = `<div class="empty-list">Carregando conteudo...</div>`;
+
+  try {
+    const response = await fetch(path);
+    if (!response.ok) throw new Error("Nao foi possivel carregar o conteudo.");
+    const text = await response.text();
+    container.innerHTML = `
+      <div class="resource-header">
+        <div>
+          <span>Leitura no site</span>
+          <strong>${escapeHtml(title)}</strong>
+        </div>
+        <span>${escapeHtml(path)}</span>
+      </div>
+      <pre><code>${escapeHtml(text)}</code></pre>
+    `;
+    container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (error) {
+    container.innerHTML = `<div class="empty-list">${escapeHtml(error.message)}</div>`;
+  }
+}
+
+function syncLabStateFromUrl() {
+  if (document.body.dataset.page !== "laboratorio") return;
+  const params = new URLSearchParams(window.location.search);
+  const levelId = params.get("level");
+  const exercise = Number(params.get("exercise"));
+
+  if (levels.some((level) => level.id === levelId)) {
+    state.currentLevel = levelId;
+  }
+  if (Number.isInteger(exercise) && exercise > 0) {
+    state.currentExercise = Math.min(exercise - 1, getCurrentLevel().exercises.length - 1);
+  }
+}
+
 function exerciseDescription(level, exerciseIndex) {
   const total = level.exercises.length;
   return `Exercicio ${exerciseIndex + 1} de ${total}: ${level.exercises[exerciseIndex]}. Foco: ${level.focus}. Antes de abrir o gabarito, registre a tentativa e a validacao.`;
@@ -552,12 +793,24 @@ function renderExercise() {
   );
 
   const exerciseFile = document.querySelector("#exercise-file");
-  exerciseFile.href = level.file;
+  if (exerciseFile) {
+    exerciseFile.dataset.path = level.file;
+    exerciseFile.dataset.title = `${level.title} - caderno de exercicios`;
+  }
 
   const answerFile = document.querySelector("#answer-file");
-  answerFile.href = level.answer;
-  answerFile.classList.toggle("disabled-link", !attempted);
-  answerFile.setAttribute("aria-disabled", String(!attempted));
+  if (answerFile) {
+    answerFile.dataset.path = level.answer;
+    answerFile.dataset.title = `${level.title} - gabarito`;
+    answerFile.classList.toggle("disabled-link", !attempted);
+    answerFile.setAttribute("aria-disabled", String(!attempted));
+  }
+
+  const resourceViewer = document.querySelector("#resource-viewer");
+  if (resourceViewer) {
+    resourceViewer.classList.remove("is-open");
+    resourceViewer.innerHTML = "";
+  }
 
   const check = document.querySelector("#attempt-check");
   check.checked = attempted;
@@ -714,6 +967,21 @@ function wireExerciseControls() {
     renderAttemptHistory();
   });
 
+  document.querySelector("#exercise-file")?.addEventListener("click", (event) => {
+    showResource(
+      event.currentTarget.dataset.path,
+      event.currentTarget.dataset.title,
+    );
+  });
+
+  document.querySelector("#answer-file")?.addEventListener("click", (event) => {
+    if (event.currentTarget.getAttribute("aria-disabled") === "true") return;
+    showResource(
+      event.currentTarget.dataset.path,
+      event.currentTarget.dataset.title,
+    );
+  });
+
   document.querySelector("#exercise-search")?.addEventListener("input", () => {
     renderLevelTabs();
     renderExerciseList();
@@ -727,12 +995,6 @@ function wireExerciseControls() {
     renderExerciseList();
     renderExercise();
     renderLabStats();
-  });
-
-  document.querySelector("#answer-file")?.addEventListener("click", (event) => {
-    if (event.currentTarget.getAttribute("aria-disabled") === "true") {
-      event.preventDefault();
-    }
   });
 }
 
@@ -1158,9 +1420,11 @@ function redirectLegacyHashRoutes() {
 
 function initApp() {
   redirectLegacyHashRoutes();
+  syncLabStateFromUrl();
   markCurrentPage();
   renderTimeline();
   renderStudyMap();
+  renderCourseModules();
   renderLevelTabs();
   renderExerciseList();
   renderExercise();
