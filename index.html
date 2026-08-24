@@ -5,38 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Painel de estudo SQL integrando a base local sql-estudo e a trilha de BI no Notion."
+      content="Ambiente web de estudos SQL com trilha, laboratório e base de referência."
     >
-    <title>SQL Estudo | Painel de Estudos</title>
+    <title>SQL Estudo | Início</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body data-page="home">
     <header class="topbar">
       <div>
         <p class="eyebrow">SQL Estudo</p>
         <h1>Painel de prática para BI Júnior</h1>
       </div>
       <nav aria-label="Navegação principal">
-        <a href="#trilha">Trilha</a>
-        <a href="#laboratorio">Laboratório</a>
-        <a href="#execucao">Execução</a>
-        <a href="#base">Base</a>
+        <a href="index.html">Início</a>
+        <a href="trilha.html">Trilha</a>
+        <a href="laboratorio.html">Laboratório</a>
+        <a href="base.html">Base</a>
       </nav>
     </header>
 
     <main>
       <section class="overview" aria-labelledby="overview-title">
         <div class="overview-copy">
+          <p class="eyebrow">Ambiente integrado</p>
           <h2 id="overview-title">Do roteiro ao treino diário</h2>
           <p>
             A trilha do Notion vira sequência de prática, e os arquivos locais
-            viram tarefas navegáveis com progresso, anotações e foco por nível.
+            viram tarefas navegáveis com execução SQL segura no navegador.
           </p>
           <div class="metrics" aria-label="Resumo do plano">
             <span><strong>5</strong> níveis SQL</span>
             <span><strong>50</strong> exercícios</span>
-            <span><strong>2</strong> interações</span>
+            <span><strong>6</strong> tabelas fictícias</span>
           </div>
         </div>
         <div class="schema-visual" aria-label="Mapa visual da base SQL">
@@ -50,144 +51,35 @@
         </div>
       </section>
 
-      <section id="trilha" class="section-band" aria-labelledby="trilha-title">
+      <section class="section-band" aria-labelledby="areas-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Interação 1</p>
-            <h2 id="trilha-title">Trilha guiada Notion + repositório</h2>
+            <p class="eyebrow">Páginas</p>
+            <h2 id="areas-title">Escolha onde estudar</h2>
           </div>
-          <button id="reset-progress" class="ghost-button" type="button">
-            Zerar progresso
-          </button>
         </div>
-        <div id="timeline" class="timeline" aria-live="polite"></div>
-      </section>
-
-      <section
-        id="laboratorio"
-        class="section-band muted"
-        aria-labelledby="laboratorio-title"
-      >
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Interação 2</p>
-            <h2 id="laboratorio-title">Laboratório de exercícios</h2>
-          </div>
-          <label class="search-box">
-            <span>Buscar</span>
-            <input id="exercise-search" type="search" placeholder="JOIN, KPI, RFM...">
-          </label>
-        </div>
-
-        <div class="lab-layout">
-          <aside class="level-panel" aria-label="Níveis de estudo">
-            <div id="level-tabs" class="level-tabs"></div>
-            <div id="exercise-list" class="exercise-list"></div>
-          </aside>
-          <article class="exercise-panel">
-            <div class="exercise-header">
-              <div>
-                <p id="exercise-level" class="eyebrow"></p>
-                <h3 id="exercise-title"></h3>
-              </div>
-              <div class="timer" aria-label="Temporizador de foco">
-                <span id="timer-display">25:00</span>
-                <button id="timer-toggle" class="icon-button" type="button" aria-label="Iniciar foco">
-                  ▶
-                </button>
-                <button id="timer-reset" class="icon-button" type="button" aria-label="Reiniciar foco">
-                  ↺
-                </button>
-              </div>
-            </div>
-
-            <p id="exercise-description" class="exercise-description"></p>
-
-            <div class="exercise-actions">
-              <a id="exercise-file" class="primary-button" href="#">Abrir exercício</a>
-              <a id="answer-file" class="ghost-button disabled-link" href="#" aria-disabled="true">
-                Abrir gabarito
-              </a>
-              <label class="attempt-check">
-                <input id="attempt-check" type="checkbox">
-                Tentativa salva
-              </label>
-            </div>
-
-            <label class="notes-box">
-              <span>Anotações da tentativa</span>
-              <textarea
-                id="exercise-notes"
-                rows="8"
-                placeholder="Hipótese, granularidade, JOINs usados, validações e dúvidas."
-              ></textarea>
-            </label>
-
-            <section id="execucao" class="sql-runner" aria-labelledby="sql-runner-title">
-              <div class="runner-heading">
-                <div>
-                  <p class="eyebrow">Execução segura</p>
-                  <h4 id="sql-runner-title">SQLite em memória</h4>
-                </div>
-                <span id="sql-engine-status" class="status-pill">Carregando motor SQL</span>
-              </div>
-
-              <label class="sql-editor-box">
-                <span>Consulta SQL</span>
-                <textarea
-                  id="sql-editor"
-                  rows="11"
-                  spellcheck="false"
-                  placeholder="Escreva uma consulta SELECT ou WITH e execute com Ctrl+Enter."
-                ></textarea>
-              </label>
-
-              <div class="runner-actions">
-                <button id="run-sql" class="primary-button" type="button">Executar</button>
-                <button id="load-starter-sql" class="ghost-button" type="button">
-                  Carregar modelo
-                </button>
-                <button id="reset-sql-db" class="ghost-button" type="button">
-                  Restaurar base
-                </button>
-              </div>
-
-              <div class="runner-rules" aria-label="Regras de segurança">
-                <span>Permitido: SELECT e WITH</span>
-                <span>Bloqueado: INSERT, UPDATE, DELETE, DROP, ALTER, PRAGMA e similares</span>
-                <span>Limite: 100 linhas exibidas e interrupção de consulta longa</span>
-              </div>
-
-              <div id="sql-message" class="sql-message" role="status"></div>
-              <div id="sql-result" class="sql-result" aria-live="polite"></div>
-            </section>
-          </article>
-        </div>
-      </section>
-
-      <section id="base" class="section-band" aria-labelledby="base-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Base local</p>
-            <h2 id="base-title">Modelo de dados e referências</h2>
-          </div>
-          <a class="ghost-button" href="README.md">README</a>
-        </div>
-        <div class="reference-grid">
-          <div>
-            <h3>Tabelas principais</h3>
-            <ul id="table-list"></ul>
-          </div>
-          <div>
-            <h3>Fontes da trilha</h3>
-            <ul id="source-list"></ul>
-          </div>
+        <div class="home-grid">
+          <a class="home-card" href="trilha.html">
+            <span>01</span>
+            <h3>Trilha guiada</h3>
+            <p>Sequência de estudo com progresso por etapa, conectando Notion e repositório.</p>
+          </a>
+          <a class="home-card" href="laboratorio.html">
+            <span>02</span>
+            <h3>Laboratório</h3>
+            <p>Exercícios por nível, anotações, timer e execução segura de consultas SQL.</p>
+          </a>
+          <a class="home-card" href="base.html">
+            <span>03</span>
+            <h3>Base de referência</h3>
+            <p>Modelo de dados, tabelas disponíveis, fontes da trilha e regras do ambiente.</p>
+          </a>
         </div>
       </section>
     </main>
 
     <footer>
-      <span>Estudo prático de SQL com SQLite, Notion e GitHub.</span>
+      <span>Estudo prático de SQL com SQLite, Notion, GitHub e Vercel.</span>
     </footer>
 
     <script src="app.js"></script>

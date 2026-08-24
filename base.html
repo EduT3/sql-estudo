@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Modelo de dados e referências da base SQL de estudo.">
+    <title>SQL Estudo | Base</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body data-page="base">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">SQL Estudo</p>
+        <h1>Base de referência</h1>
+      </div>
+      <nav aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="trilha.html">Trilha</a>
+        <a href="laboratorio.html">Laboratório</a>
+        <a href="base.html">Base</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero" aria-labelledby="base-hero-title">
+        <p class="eyebrow">Modelo de dados</p>
+        <h2 id="base-hero-title">Base fictícia para análise comercial</h2>
+        <p>
+          O ambiente usa seis tabelas de estudo. Localmente, você pode gerar
+          `dados/empresa.db`; no site, o laboratório usa `empresa-seed.sql`
+          para recriar a mesma base em memória.
+        </p>
+      </section>
+
+      <section id="base" class="section-band" aria-labelledby="base-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Referências</p>
+            <h2 id="base-title">Tabelas e fontes</h2>
+          </div>
+          <a class="ghost-button" href="README.md">README</a>
+        </div>
+        <div class="reference-grid">
+          <div>
+            <h3>Tabelas principais</h3>
+            <ul id="table-list"></ul>
+          </div>
+          <div>
+            <h3>Fontes da trilha</h3>
+            <ul id="source-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-band" aria-labelledby="ambientes-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Ambientes</p>
+            <h2 id="ambientes-title">Como a base é usada</h2>
+          </div>
+        </div>
+        <div class="reference-grid">
+          <div>
+            <h3>Local</h3>
+            <p>
+              `setup.py` gera `dados/empresa.db` para uso no VS Code, SQLite
+              Studio ou outra ferramenta local.
+            </p>
+          </div>
+          <div>
+            <h3>Web</h3>
+            <p>
+              `empresa-seed.sql` recria a base no navegador com SQLite
+              WebAssembly. O site aceita apenas consultas de leitura.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Estudo prático de SQL com SQLite, Notion, GitHub e Vercel.</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

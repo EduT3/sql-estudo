@@ -255,6 +255,7 @@ function getStarterSql(level, exerciseIndex) {
 
 function renderTimeline() {
   const container = document.querySelector("#timeline");
+  if (!container) return;
   container.innerHTML = "";
 
   timeline.forEach((step) => {
@@ -286,7 +287,9 @@ function exerciseDescription(level, exerciseIndex) {
 
 function renderLevelTabs() {
   const container = document.querySelector("#level-tabs");
-  const query = document.querySelector("#exercise-search").value.trim().toLowerCase();
+  const search = document.querySelector("#exercise-search");
+  if (!container || !search) return;
+  const query = search.value.trim().toLowerCase();
   container.innerHTML = "";
 
   levels.forEach((level) => {
@@ -319,8 +322,10 @@ function renderLevelTabs() {
 
 function renderExerciseList() {
   const level = getCurrentLevel();
-  const query = document.querySelector("#exercise-search").value.trim().toLowerCase();
+  const search = document.querySelector("#exercise-search");
   const container = document.querySelector("#exercise-list");
+  if (!container || !search) return;
+  const query = search.value.trim().toLowerCase();
   container.innerHTML = "";
 
   level.exercises.forEach((exercise, index) => {
@@ -349,6 +354,7 @@ function renderExerciseList() {
 }
 
 function renderExercise() {
+  if (!document.querySelector("#exercise-title")) return;
   const level = getCurrentLevel();
   const title = level.exercises[state.currentExercise] ?? level.exercises[0];
   const attempted = storage.get(
@@ -381,47 +387,50 @@ function renderExercise() {
 }
 
 function wireExerciseControls() {
-  document.querySelector("#attempt-check").addEventListener("change", (event) => {
+  const attemptCheck = document.querySelector("#attempt-check");
+  if (!attemptCheck) return;
+
+  attemptCheck.addEventListener("change", (event) => {
     const level = getCurrentLevel();
     storage.set(progressKey(`${level.id}-${state.currentExercise}`), event.target.checked);
     renderExerciseList();
     renderExercise();
   });
 
-  document.querySelector("#exercise-notes").addEventListener("input", (event) => {
+  document.querySelector("#exercise-notes")?.addEventListener("input", (event) => {
     const level = getCurrentLevel();
     storage.set(notesKey(level.id, state.currentExercise), event.target.value);
   });
 
-  document.querySelector("#sql-editor").addEventListener("input", (event) => {
+  document.querySelector("#sql-editor")?.addEventListener("input", (event) => {
     const level = getCurrentLevel();
     storage.set(editorKey(level.id, state.currentExercise), event.target.value);
   });
 
-  document.querySelector("#sql-editor").addEventListener("keydown", (event) => {
+  document.querySelector("#sql-editor")?.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
       runCurrentSql();
     }
   });
 
-  document.querySelector("#run-sql").addEventListener("click", runCurrentSql);
+  document.querySelector("#run-sql")?.addEventListener("click", runCurrentSql);
 
-  document.querySelector("#load-starter-sql").addEventListener("click", () => {
+  document.querySelector("#load-starter-sql")?.addEventListener("click", () => {
     const level = getCurrentLevel();
     const starter = getStarterSql(level, state.currentExercise);
     document.querySelector("#sql-editor").value = starter;
     storage.set(editorKey(level.id, state.currentExercise), starter);
   });
 
-  document.querySelector("#reset-sql-db").addEventListener("click", resetSqlDatabase);
+  document.querySelector("#reset-sql-db")?.addEventListener("click", resetSqlDatabase);
 
-  document.querySelector("#exercise-search").addEventListener("input", () => {
+  document.querySelector("#exercise-search")?.addEventListener("input", () => {
     renderLevelTabs();
     renderExerciseList();
   });
 
-  document.querySelector("#reset-progress").addEventListener("click", () => {
+  document.querySelector("#reset-progress")?.addEventListener("click", () => {
     const keys = Object.keys(localStorage).filter((key) => key.startsWith("sql-estudo-"));
     keys.forEach((key) => localStorage.removeItem(key));
     renderTimeline();
@@ -429,7 +438,7 @@ function wireExerciseControls() {
     renderExercise();
   });
 
-  document.querySelector("#answer-file").addEventListener("click", (event) => {
+  document.querySelector("#answer-file")?.addEventListener("click", (event) => {
     if (event.currentTarget.getAttribute("aria-disabled") === "true") {
       event.preventDefault();
     }
@@ -443,12 +452,19 @@ function formatTimer(seconds) {
 }
 
 function renderTimer() {
-  document.querySelector("#timer-display").textContent = formatTimer(state.timerSeconds);
-  document.querySelector("#timer-toggle").textContent = state.timerId ? "Ⅱ" : "▶";
+  const display = document.querySelector("#timer-display");
+  const toggle = document.querySelector("#timer-toggle");
+  if (!display || !toggle) return;
+  display.textContent = formatTimer(state.timerSeconds);
+  toggle.textContent = state.timerId ? "Ⅱ" : "▶";
 }
 
 function wireTimer() {
-  document.querySelector("#timer-toggle").addEventListener("click", () => {
+  const toggle = document.querySelector("#timer-toggle");
+  const reset = document.querySelector("#timer-reset");
+  if (!toggle || !reset) return;
+
+  toggle.addEventListener("click", () => {
     if (state.timerId) {
       clearInterval(state.timerId);
       state.timerId = null;
@@ -467,7 +483,7 @@ function wireTimer() {
     renderTimer();
   });
 
-  document.querySelector("#timer-reset").addEventListener("click", () => {
+  reset.addEventListener("click", () => {
     clearInterval(state.timerId);
     state.timerId = null;
     state.timerSeconds = 25 * 60;
@@ -477,44 +493,51 @@ function wireTimer() {
 
 function renderReferences() {
   const tableList = document.querySelector("#table-list");
+  if (!tableList) return;
   tableList.innerHTML = tables
     .map(([table, description]) => `<li><strong>${table}</strong>: ${description}</li>`)
     .join("");
 
   const sourceList = document.querySelector("#source-list");
+  if (!sourceList) return;
   sourceList.innerHTML = notionSources
     .map((source) => `<li><a href="${source.url}">${source.title}</a></li>`)
     .join("");
 }
 
 function renderSqlEditor() {
+  const editor = document.querySelector("#sql-editor");
+  if (!editor) return;
   const level = getCurrentLevel();
   const key = editorKey(level.id, state.currentExercise);
   const saved = storage.get(key, null);
-  document.querySelector("#sql-editor").value =
-    saved === null ? getStarterSql(level, state.currentExercise) : saved;
+  editor.value = saved === null ? getStarterSql(level, state.currentExercise) : saved;
 }
 
 function setSqlStatus(message, mode = "") {
   const status = document.querySelector("#sql-engine-status");
+  if (!status) return;
   status.textContent = message;
   status.className = `status-pill ${mode}`.trim();
 }
 
 function setSqlMessage(message, isError = false) {
   const output = document.querySelector("#sql-message");
+  if (!output) return;
   output.textContent = message;
   output.classList.toggle("error", isError);
 }
 
 function renderSqlEmpty(message) {
   const container = document.querySelector("#sql-result");
+  if (!container) return;
   container.className = "sql-result empty";
   container.textContent = message;
 }
 
 function renderSqlResults(results) {
   const container = document.querySelector("#sql-result");
+  if (!container) return;
   container.className = "sql-result";
 
   if (!results.length) {
@@ -573,6 +596,7 @@ function terminateSqlWorker() {
 }
 
 function createSqlWorker() {
+  if (!document.querySelector("#sql-editor")) return;
   if (!window.Worker) {
     setSqlStatus("Worker indisponivel", "error");
     setSqlMessage("Seu navegador nao suporta a execucao isolada do laboratorio SQL.", true);
@@ -640,8 +664,10 @@ function postSqlMessage(type, payload = {}, timeoutMs = 4500) {
 }
 
 function runCurrentSql() {
-  const sql = document.querySelector("#sql-editor").value;
+  const editor = document.querySelector("#sql-editor");
   const runButton = document.querySelector("#run-sql");
+  if (!editor || !runButton) return;
+  const sql = editor.value;
   runButton.disabled = true;
   setSqlMessage("Executando consulta...");
 
@@ -664,6 +690,7 @@ function runCurrentSql() {
 }
 
 function resetSqlDatabase() {
+  if (!sqlLab.worker) return;
   setSqlMessage("Restaurando a base em memoria...");
   postSqlMessage("reset", {}, 15000)
     .then((payload) => {
@@ -679,12 +706,28 @@ function resetSqlDatabase() {
     });
 }
 
-renderTimeline();
-renderLevelTabs();
-renderExerciseList();
-renderExercise();
-renderReferences();
-renderTimer();
-wireExerciseControls();
-wireTimer();
-createSqlWorker();
+function markCurrentPage() {
+  const page = document.body.dataset.page || "home";
+  document.querySelectorAll(".topbar nav a").forEach((link) => {
+    const target = link.getAttribute("href") || "";
+    const isActive =
+      (page === "home" && target === "index.html") ||
+      target.startsWith(`${page}.html`);
+    link.classList.toggle("active", isActive);
+  });
+}
+
+function initApp() {
+  markCurrentPage();
+  renderTimeline();
+  renderLevelTabs();
+  renderExerciseList();
+  renderExercise();
+  renderReferences();
+  renderTimer();
+  wireExerciseControls();
+  wireTimer();
+  createSqlWorker();
+}
+
+initApp();

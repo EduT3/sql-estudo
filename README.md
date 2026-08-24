@@ -1,9 +1,39 @@
 # Ambiente de Estudo SQL
 
-Projeto de estudo com SQLite para praticar consultas SQL em um banco de dados
-fictício de uma empresa de tecnologia. A base foi pensada para exercícios de
-análise de dados, com funcionários, departamentos, clientes, produtos, pedidos e
-itens de pedido.
+Projeto de estudo com SQLite para praticar consultas SQL em uma base fictícia
+de uma empresa de tecnologia. O ambiente tem duas formas de uso:
+
+- **Web**: site estático com páginas separadas, trilha de estudo e laboratório
+  SQL executando no navegador.
+- **Local**: banco SQLite `dados/empresa.db`, gerado pelo `setup.py`, para uso
+  no VS Code, SQLite Studio ou outra ferramenta.
+
+## Páginas do site
+
+| Página | Arquivo | Função |
+|--------|---------|--------|
+| Início | `index.html` | Visão geral do ambiente e atalhos |
+| Trilha | `trilha.html` | Progresso por etapa, conectando Notion e repositório |
+| Laboratório | `laboratorio.html` | Exercícios, anotações, timer e execução SQL segura |
+| Base | `base.html` | Modelo de dados, tabelas e fontes da trilha |
+
+## Como funciona a execução SQL no navegador
+
+O laboratório web usa SQLite em WebAssembly via `sql.js`. A base é criada em
+memória a partir de `empresa-seed.sql`.
+
+Regras do laboratório:
+
+- aceita apenas consultas de leitura começando com `SELECT` ou `WITH`;
+- bloqueia comandos como `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`,
+  `CREATE`, `PRAGMA`, `ATTACH` e similares;
+- exibe no máximo 100 linhas por execução;
+- interrompe consultas longas recriando o worker;
+- não usa backend, credenciais ou banco real;
+- não publica `dados/empresa.db`.
+
+O arquivo `empresa-seed.sql` contém somente a base fictícia necessária para o
+treino web. O arquivo `dados/empresa.db` continua sendo um artefato local.
 
 ## O que você vai praticar
 
@@ -17,10 +47,18 @@ itens de pedido.
 
 ```text
 sql-estudo/
+├── index.html
+├── trilha.html
+├── laboratorio.html
+├── base.html
+├── styles.css
+├── app.js
+├── sql-worker.js
+├── empresa-seed.sql          # base fictícia para o laboratório web
 ├── setup.py
 ├── README.md
 ├── dados/
-│   └── empresa.db              # gerado localmente pelo setup.py
+│   └── empresa.db            # gerado localmente pelo setup.py
 ├── exercicios/
 │   ├── nivel_1_basico.sql
 │   ├── nivel_2_group_join.sql
@@ -35,12 +73,24 @@ sql-estudo/
     └── gabarito_nivel_5.sql
 ```
 
-## Como usar
+## Como usar pela web
+
+1. Abra o site publicado na Vercel.
+2. Entre em **Trilha** para acompanhar a sequência de estudo.
+3. Entre em **Laboratório** para escolher nível e exercício.
+4. Escreva a consulta no editor SQL.
+5. Execute com o botão `Executar` ou com `Ctrl+Enter`.
+6. Marque `Tentativa salva` antes de abrir o gabarito.
+
+As anotações, tentativas salvas e progresso ficam no armazenamento local do
+navegador.
+
+## Como usar localmente
 
 ### 1. Pré-requisito
 
 Instale o Python 3. O projeto usa apenas bibliotecas da própria instalação do
-Python, então não é necessário instalar dependências externas.
+Python, então não é necessário instalar dependências externas para gerar o banco.
 
 ### 2. Criar o banco SQLite
 
@@ -68,10 +118,10 @@ funcionários, vende produtos para clientes e registra cada venda em pedidos com
 itens.
 
 ```text
-departamentos 1 ── N funcionarios
-clientes      1 ── N pedidos
-pedidos       1 ── N itens_pedido
-produtos      1 ── N itens_pedido
+departamentos 1 -- N funcionarios
+clientes      1 -- N pedidos
+pedidos       1 -- N itens_pedido
+produtos      1 -- N itens_pedido
 ```
 
 ```mermaid
@@ -139,18 +189,7 @@ erDiagram
 | pedidos         | 35        | Pedidos entre janeiro/2024 e janeiro/2025  |
 | itens_pedido    | 56        | Produtos, quantidades e preços por pedido  |
 
-## Como entender o banco
-
-| Tabela | O que representa | Campos mais usados |
-|--------|------------------|--------------------|
-| `departamentos` | Áreas da empresa | `id`, `nome`, `cidade` |
-| `funcionarios` | Pessoas que trabalham na empresa | `nome`, `cargo`, `salario`, `departamento_id` |
-| `clientes` | Pessoas e empresas que compram | `nome`, `estado`, `segmento` |
-| `pedidos` | Cabeçalho de cada compra | `cliente_id`, `data`, `status` |
-| `itens_pedido` | Produtos dentro de cada pedido | `pedido_id`, `produto_id`, `quantidade`, `preco_unit` |
-| `produtos` | Catálogo de produtos | `nome`, `categoria`, `preco`, `custo` |
-
-Regras úteis para os exercícios:
+## Regras úteis para os exercícios
 
 - O valor vendido de um item é `quantidade * preco_unit`.
 - O custo de um item é `quantidade * custo`.
@@ -158,16 +197,9 @@ Regras úteis para os exercícios:
 - Para análises de venda real, use normalmente `pedidos.status = 'Entregue'`.
 - `pedidos` guarda a compra; `itens_pedido` guarda os produtos dessa compra.
 
-### Exemplo de pedido
+## Exemplo de pedido
 
 O pedido `1` mostra como as tabelas se conectam:
-
-| pedido | cliente | data | status | produto | quantidade | preço unitário | total do item |
-|--------|---------|------|--------|---------|------------|----------------|---------------|
-| 1 | Empresa Alpha Ltda | 2024-01-08 | Entregue | Mouse Sem Fio | 3 | 180.00 | 540.00 |
-| 1 | Empresa Alpha Ltda | 2024-01-08 | Entregue | Notebook Pro 15 | 2 | 4500.00 | 9000.00 |
-
-Query usada para chegar nesse resultado:
 
 ```sql
 SELECT p.id AS pedido_id,
@@ -192,12 +224,13 @@ ranking.
 
 ## Roteiro sugerido
 
-1. Resolva `exercicios/nivel_1_basico.sql`.
-2. Confira as respostas em `respostas/gabarito_nivel_1.sql`.
-3. Repita o fluxo para os níveis 2, 3, 4 e 5.
-
-Tente escrever as queries antes de olhar o gabarito. Os arquivos em
-`respostas/` existem para conferência e comparação de abordagem.
+1. Abra a página **Trilha** e marque o ponto atual.
+2. Vá para **Laboratório** e resolva `nivel_1_basico.sql`.
+3. Execute a consulta no editor web ou localmente no VS Code.
+4. Registre hipótese, granularidade, validação e dúvidas.
+5. Marque `Tentativa salva`.
+6. Confira o gabarito.
+7. Repita o fluxo para os níveis 2, 3, 4 e 5.
 
 Sequência recomendada:
 
@@ -208,3 +241,9 @@ Sequência recomendada:
 | 3 | `nivel_3_avancado.sql` | Subqueries, CTEs e window functions |
 | 4 | `nivel_4_kpis_negocio.sql` | Indicadores de negócio e análise comercial |
 | 5 | `nivel_5_projeto_final.sql` | Relatório executivo usando views e rankings |
+
+## Publicação
+
+O repositório pode ser publicado como site estático no Vercel. O `.vercelignore`
+exclui `dados/`, `.git/`, `.vercel/` e ambientes locais para evitar publicar o
+banco SQLite local ou arquivos de configuração temporários.

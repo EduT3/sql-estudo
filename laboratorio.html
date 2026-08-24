@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Laboratório de exercícios SQL com execução segura em SQLite no navegador."
+    >
+    <title>SQL Estudo | Laboratório</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body data-page="laboratorio">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">SQL Estudo</p>
+        <h1>Laboratório de exercícios</h1>
+      </div>
+      <nav aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="trilha.html">Trilha</a>
+        <a href="laboratorio.html">Laboratório</a>
+        <a href="base.html">Base</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero" aria-labelledby="laboratorio-hero-title">
+        <p class="eyebrow">Interação 2</p>
+        <h2 id="laboratorio-hero-title">Prática com execução segura</h2>
+        <p>
+          Escolha um nível, escreva sua consulta e execute em uma base SQLite
+          fictícia criada em memória no próprio navegador.
+        </p>
+      </section>
+
+      <section
+        id="laboratorio"
+        class="section-band muted"
+        aria-labelledby="laboratorio-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Exercícios</p>
+            <h2 id="laboratorio-title">Laboratório SQL</h2>
+          </div>
+          <label class="search-box">
+            <span>Buscar</span>
+            <input id="exercise-search" type="search" placeholder="JOIN, KPI, RFM...">
+          </label>
+        </div>
+
+        <div class="lab-layout">
+          <aside class="level-panel" aria-label="Níveis de estudo">
+            <div id="level-tabs" class="level-tabs"></div>
+            <div id="exercise-list" class="exercise-list"></div>
+          </aside>
+          <article class="exercise-panel">
+            <div class="exercise-header">
+              <div>
+                <p id="exercise-level" class="eyebrow"></p>
+                <h3 id="exercise-title"></h3>
+              </div>
+              <div class="timer" aria-label="Temporizador de foco">
+                <span id="timer-display">25:00</span>
+                <button id="timer-toggle" class="icon-button" type="button" aria-label="Iniciar foco">
+                  ▶
+                </button>
+                <button id="timer-reset" class="icon-button" type="button" aria-label="Reiniciar foco">
+                  ↺
+                </button>
+              </div>
+            </div>
+
+            <p id="exercise-description" class="exercise-description"></p>
+
+            <div class="exercise-actions">
+              <a id="exercise-file" class="primary-button" href="#">Abrir exercício</a>
+              <a id="answer-file" class="ghost-button disabled-link" href="#" aria-disabled="true">
+                Abrir gabarito
+              </a>
+              <label class="attempt-check">
+                <input id="attempt-check" type="checkbox">
+                Tentativa salva
+              </label>
+            </div>
+
+            <label class="notes-box">
+              <span>Anotações da tentativa</span>
+              <textarea
+                id="exercise-notes"
+                rows="8"
+                placeholder="Hipótese, granularidade, JOINs usados, validações e dúvidas."
+              ></textarea>
+            </label>
+
+            <section id="execucao" class="sql-runner" aria-labelledby="sql-runner-title">
+              <div class="runner-heading">
+                <div>
+                  <p class="eyebrow">Execução segura</p>
+                  <h4 id="sql-runner-title">SQLite em memória</h4>
+                </div>
+                <span id="sql-engine-status" class="status-pill">Carregando motor SQL</span>
+              </div>
+
+              <label class="sql-editor-box">
+                <span>Consulta SQL</span>
+                <textarea
+                  id="sql-editor"
+                  rows="11"
+                  spellcheck="false"
+                  placeholder="Escreva uma consulta SELECT ou WITH e execute com Ctrl+Enter."
+                ></textarea>
+              </label>
+
+              <div class="runner-actions">
+                <button id="run-sql" class="primary-button" type="button">Executar</button>
+                <button id="load-starter-sql" class="ghost-button" type="button">
+                  Carregar modelo
+                </button>
+                <button id="reset-sql-db" class="ghost-button" type="button">
+                  Restaurar base
+                </button>
+              </div>
+
+              <div class="runner-rules" aria-label="Regras de segurança">
+                <span>Permitido: SELECT e WITH</span>
+                <span>Bloqueado: INSERT, UPDATE, DELETE, DROP, ALTER, PRAGMA e similares</span>
+                <span>Limite: 100 linhas exibidas e interrupção de consulta longa</span>
+              </div>
+
+              <div id="sql-message" class="sql-message" role="status"></div>
+              <div id="sql-result" class="sql-result" aria-live="polite"></div>
+            </section>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Estudo prático de SQL com SQLite, Notion, GitHub e Vercel.</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

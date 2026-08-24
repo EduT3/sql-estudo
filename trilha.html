@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Trilha guiada de estudo SQL para BI Júnior.">
+    <title>SQL Estudo | Trilha</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body data-page="trilha">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">SQL Estudo</p>
+        <h1>Trilha de estudo</h1>
+      </div>
+      <nav aria-label="Navegação principal">
+        <a href="index.html">Início</a>
+        <a href="trilha.html">Trilha</a>
+        <a href="laboratorio.html">Laboratório</a>
+        <a href="base.html">Base</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero" aria-labelledby="trilha-hero-title">
+        <p class="eyebrow">Interação 1</p>
+        <h2 id="trilha-hero-title">Trilha guiada Notion + repositório</h2>
+        <p>
+          Use esta página para acompanhar o avanço por etapa. A execução prática
+          fica na página Laboratório.
+        </p>
+      </section>
+
+      <section id="trilha" class="section-band" aria-labelledby="trilha-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Progresso</p>
+            <h2 id="trilha-title">Sequência recomendada</h2>
+          </div>
+          <button id="reset-progress" class="ghost-button" type="button">
+            Zerar progresso
+          </button>
+        </div>
+        <div id="timeline" class="timeline" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Estudo prático de SQL com SQLite, Notion, GitHub e Vercel.</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
