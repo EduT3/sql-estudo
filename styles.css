@@ -10,6 +10,7 @@
   --teal: #0f766e;
   --teal-dark: #0b5f59;
   --amber: #b45309;
+  --rose: #be3a5a;
   --indigo: #4f46e5;
   --shadow: 0 18px 45px rgba(33, 50, 74, 0.09);
   font-family:
@@ -375,6 +376,62 @@ main {
   pointer-events: none;
 }
 
+.study-map {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.map-step {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  min-height: 170px;
+  padding: 14px;
+}
+
+.map-step span {
+  align-items: center;
+  background: #e0f2fe;
+  border-radius: 999px;
+  color: var(--accent-dark);
+  display: inline-flex;
+  font-weight: 900;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.map-step strong {
+  display: block;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+
+.map-step p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.map-step.done {
+  background: #f0fdfa;
+  border-color: rgba(15, 118, 110, 0.32);
+}
+
+.map-step.done span {
+  background: var(--teal);
+  color: #ffffff;
+}
+
+.map-step.current {
+  border-color: rgba(37, 99, 235, 0.42);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
 .timeline {
   display: grid;
   gap: 12px;
@@ -451,6 +508,44 @@ main {
 .notes-box textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.lab-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.lab-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lab-stats span {
+  align-items: baseline;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 5px;
+  padding: 8px 10px;
+}
+
+.lab-stats strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.active-filter {
+  background: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.3);
+  color: var(--accent-dark);
 }
 
 .lab-layout {
@@ -551,6 +646,36 @@ main {
   color: var(--teal-dark);
 }
 
+.exercise-item small {
+  color: var(--muted);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-top: 3px;
+}
+
+.exercise-item.status-correct span:first-child {
+  background: var(--teal);
+  color: #ffffff;
+}
+
+.exercise-item.status-almost span:first-child {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.exercise-item.status-review span:first-child {
+  background: #ffe4e6;
+  color: #9f2746;
+}
+
+.empty-list {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  padding: 10px;
+}
+
 .exercise-panel {
   display: grid;
   gap: 20px;
@@ -602,6 +727,61 @@ main {
   font-size: 1.04rem;
   line-height: 1.6;
   margin: 0;
+}
+
+.study-assist {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.assist-card {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 13px;
+}
+
+.assist-card span,
+.sql-editor-box span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.assist-card p {
+  color: var(--text);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.hint-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.hint-list li {
+  color: var(--muted);
+  display: none;
+  line-height: 1.4;
+}
+
+.hint-list li.visible {
+  display: list-item;
+}
+
+.hint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bi-card {
+  background: #fff7ed;
 }
 
 .exercise-actions {
@@ -680,12 +860,6 @@ main {
   gap: 6px;
 }
 
-.sql-editor-box span {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 800;
-}
-
 .sql-editor-box textarea {
   background: #101827;
   border: 1px solid #26344d;
@@ -731,6 +905,80 @@ main {
 
 .sql-message.error {
   color: #9f2746;
+}
+
+.sql-insight {
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 8px;
+  color: var(--accent-dark);
+  line-height: 1.45;
+  min-height: 0;
+  padding: 11px 12px;
+}
+
+.sql-insight:empty,
+.sql-validation:empty {
+  display: none;
+}
+
+.sql-validation {
+  display: grid;
+}
+
+.validation-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.validation-card strong {
+  font-size: 0.95rem;
+}
+
+.validation-card ul {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.validation-card li {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.validation-card li::before {
+  content: "•";
+  font-weight: 900;
+  margin-right: 7px;
+}
+
+.validation-card li.ok::before {
+  color: var(--teal);
+}
+
+.validation-card li.missing::before {
+  color: var(--rose);
+}
+
+.status-correct {
+  background: #f0fdfa;
+  border-color: rgba(15, 118, 110, 0.3);
+}
+
+.status-almost {
+  background: #fff7ed;
+  border-color: rgba(180, 83, 9, 0.28);
+}
+
+.status-review {
+  background: #fff1f2;
+  border-color: rgba(190, 58, 90, 0.26);
 }
 
 .sql-result {
@@ -819,6 +1067,48 @@ main {
   font-weight: 800;
 }
 
+.attempt-history {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+.history-heading {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.history-heading h4 {
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  line-height: 1.15;
+  margin: 4px 0 0;
+}
+
+.attempt-history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.attempt-row {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.attempt-row span {
+  color: var(--muted);
+  display: block;
+  font-size: 0.86rem;
+  margin-top: 3px;
+}
+
 footer {
   border-top: 1px solid var(--line);
   color: var(--muted);
@@ -829,7 +1119,9 @@ footer {
   .overview,
   .lab-layout,
   .reference-grid,
-  .home-grid {
+  .home-grid,
+  .study-assist,
+  .study-map {
     grid-template-columns: 1fr;
   }
 
@@ -842,7 +1134,10 @@ footer {
   .topbar,
   .section-heading,
   .exercise-header,
-  .runner-heading {
+  .runner-heading,
+  .lab-toolbar,
+  .history-heading,
+  .attempt-row {
     align-items: stretch;
     flex-direction: column;
   }

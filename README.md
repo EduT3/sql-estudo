@@ -13,8 +13,8 @@ de uma empresa de tecnologia. O ambiente tem duas formas de uso:
 | Página | Arquivo | Função |
 |--------|---------|--------|
 | Início | `index.html` | Visão geral do ambiente e atalhos |
-| Trilha | `trilha.html` | Progresso por etapa, conectando Notion e repositório |
-| Laboratório | `laboratorio.html` | Exercícios, anotações, timer e execução SQL segura |
+| Trilha | `trilha.html` | Mapa de fases e progresso por etapa, conectando Notion e repositório |
+| Laboratório | `laboratorio.html` | Exercícios, dicas, correção assistida, histórico local, timer e execução SQL segura |
 | Base | `base.html` | Modelo de dados, tabelas e fontes da trilha |
 
 ## Como funciona a execução SQL no navegador
@@ -31,6 +31,15 @@ Regras do laboratório:
 - interrompe consultas longas recriando o worker;
 - não usa backend, credenciais ou banco real;
 - não publica `dados/empresa.db`.
+
+Recursos de estudo:
+
+- dicas graduais por exercício;
+- correção assistida após cada execução;
+- leitura simples do resultado retornado;
+- histórico local das últimas tentativas por exercício;
+- modo revisão para filtrar pendências;
+- mini desafio BI para conectar SQL com análise de negócio.
 
 O arquivo `empresa-seed.sql` contém somente a base fictícia necessária para o
 treino web. O arquivo `dados/empresa.db` continua sendo um artefato local.
@@ -78,12 +87,14 @@ sql-estudo/
 1. Abra o site publicado na Vercel.
 2. Entre em **Trilha** para acompanhar a sequência de estudo.
 3. Entre em **Laboratório** para escolher nível e exercício.
-4. Escreva a consulta no editor SQL.
+4. Leia o objetivo, abra dicas se precisar e escreva a consulta no editor SQL.
 5. Execute com o botão `Executar` ou com `Ctrl+Enter`.
-6. Marque `Tentativa salva` antes de abrir o gabarito.
+6. Revise o status automático: `Ok`, `Quase` ou `Revisar`.
+7. Use o histórico local para recuperar tentativas anteriores.
+8. Marque ou confirme a tentativa antes de abrir o gabarito.
 
-As anotações, tentativas salvas e progresso ficam no armazenamento local do
-navegador.
+As anotações, dicas abertas, tentativas, histórico e progresso ficam no
+armazenamento local do navegador.
 
 ## Como usar localmente
 

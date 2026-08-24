@@ -51,6 +51,13 @@
           </label>
         </div>
 
+        <div class="lab-toolbar" aria-label="Resumo do laboratório">
+          <div id="lab-stats" class="lab-stats"></div>
+          <button id="review-mode-toggle" class="ghost-button" type="button">
+            Revisar pendências
+          </button>
+        </div>
+
         <div class="lab-layout">
           <aside class="level-panel" aria-label="Níveis de estudo">
             <div id="level-tabs" class="level-tabs"></div>
@@ -74,6 +81,29 @@
             </div>
 
             <p id="exercise-description" class="exercise-description"></p>
+
+            <section class="study-assist" aria-label="Guia do exercício">
+              <div class="assist-card">
+                <span>Objetivo</span>
+                <p id="exercise-goal"></p>
+              </div>
+              <div class="assist-card hint-card">
+                <span>Dicas graduais</span>
+                <ol id="exercise-hints" class="hint-list"></ol>
+                <div class="hint-actions">
+                  <button id="show-next-hint" class="ghost-button" type="button">
+                    Mostrar dica
+                  </button>
+                  <button id="reset-hints" class="ghost-button" type="button">
+                    Ocultar dicas
+                  </button>
+                </div>
+              </div>
+              <div class="assist-card bi-card">
+                <span>Desafio BI</span>
+                <p id="bi-challenge"></p>
+              </div>
+            </section>
 
             <div class="exercise-actions">
               <a id="exercise-file" class="primary-button" href="#">Abrir exercício</a>
@@ -131,7 +161,22 @@
               </div>
 
               <div id="sql-message" class="sql-message" role="status"></div>
+              <div id="sql-insight" class="sql-insight"></div>
+              <div id="sql-validation" class="sql-validation"></div>
               <div id="sql-result" class="sql-result" aria-live="polite"></div>
+            </section>
+
+            <section class="attempt-history" aria-labelledby="attempt-history-title">
+              <div class="history-heading">
+                <div>
+                  <p class="eyebrow">Histórico local</p>
+                  <h4 id="attempt-history-title">Tentativas deste exercício</h4>
+                </div>
+                <button id="clear-attempt-history" class="ghost-button" type="button">
+                  Limpar histórico
+                </button>
+              </div>
+              <div id="attempt-history-list" class="attempt-history-list"></div>
             </section>
           </article>
         </div>

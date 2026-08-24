@@ -179,6 +179,8 @@ const state = {
   currentExercise: 0,
   timerSeconds: 25 * 60,
   timerId: null,
+  reviewOnly: false,
+  visibleHints: 0,
 };
 
 const sqlLab = {
@@ -211,6 +213,112 @@ function notesKey(levelId, exerciseIndex) {
 
 function editorKey(levelId, exerciseIndex) {
   return `sql-estudo-editor-${levelId}-${exerciseIndex}`;
+}
+
+function statusKey(levelId, exerciseIndex) {
+  return `sql-estudo-status-${levelId}-${exerciseIndex}`;
+}
+
+function historyKey(levelId, exerciseIndex) {
+  return `sql-estudo-history-${levelId}-${exerciseIndex}`;
+}
+
+function hintKey(levelId, exerciseIndex) {
+  return `sql-estudo-hints-${levelId}-${exerciseIndex}`;
+}
+
+function normalizeText(value) {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function normalizeSql(value) {
+  return normalizeText(value).replace(/\s+/g, " ");
+}
+
+function includesAny(text, words) {
+  return words.some((word) => text.includes(word));
+}
+
+function getExerciseGuide(level, exerciseIndex) {
+  const title = level.exercises[exerciseIndex] ?? level.exercises[0];
+  const text = normalizeText(title);
+  const tables = new Set();
+  const terms = new Set();
+  const hints = [];
+  let goal = `Responder a pergunta "${title}" usando ${level.focus}.`;
+  let challenge = "Depois de executar, escreva nas anotacoes qual decisao de negocio esse resultado ajudaria a tomar.";
+  let allowEmpty = false;
+  let maxRows = null;
+
+  if (includesAny(text, ["funcionario", "salario", "departamento"])) tables.add("funcionarios");
+  if (includesAny(text, ["departamento"]) && level.id !== "nivel-1") tables.add("departamentos");
+  if (includesAny(text, ["cliente", "segmento", "estado", "b2b", "b2c", "rfm"])) tables.add("clientes");
+  if (includesAny(text, ["pedido", "status", "mensal", "mes", "receita", "ticket", "compra", "funil"])) tables.add("pedidos");
+  if (includesAny(text, ["produto", "categoria", "receita", "lucro", "margem", "vendido", "vendas"])) tables.add("produtos");
+  if (includesAny(text, ["item", "receita", "lucro", "custo", "ticket", "vendido", "vendas", "valor total", "produto"])) tables.add("itens_pedido");
+
+  if (level.id !== "nivel-1" && tables.size > 1) terms.add("join");
+  if (includesAny(text, ["por ", "cada", "distribuicao", "mensal", "categoria", "segmento", "estado", "departamento"])) terms.add("group by");
+  if (includesAny(text, ["mais de 2", "apenas os departamentos"])) terms.add("having");
+  if (includesAny(text, ["ordenado", "ordene", "ranking", "top", "maior", "baratos", "lider"])) terms.add("order by");
+  if (includesAny(text, ["cinco", "top 5", "5 clientes", "10 produtos"])) {
+    maxRows = text.includes("10") ? 10 : 5;
+  }
+  if (includesAny(text, ["cancelado", "pendente", "entregue", "estado", "hardware", "mobiliario", "apos", "entre", "acima", "comeca", "termina", "b2b"])) terms.add("where");
+  if (includesAny(text, ["cte", "rfm", "risco", "acumulada", "variacao"])) terms.add("with");
+  if (includesAny(text, ["rank", "ranking", "numere", "acumulada", "lag", "row_number", "lider", "melhor cliente"])) terms.add("over");
+  if (includesAny(text, ["mensal", "mes"])) terms.add("strftime");
+  if (includesAny(text, ["margem", "ticket", "percentual", "receita", "lucro", "custo"])) terms.add("round");
+  if (includesAny(text, ["classifique", "classificacao"])) terms.add("case");
+  if (includesAny(text, ["nunca vendidos"])) {
+    terms.delete("join");
+    terms.add("not");
+    allowEmpty = true;
+  }
+  if (includesAny(text, ["view"])) {
+    terms.delete("join");
+    terms.add("select");
+    goal = "Montar a consulta base de vendas detalhadas. No site, use SELECT ou WITH; a criacao de VIEW fica para o ambiente local.";
+  }
+
+  if (tables.size === 0) tables.add("pedidos");
+  if (terms.size === 0) terms.add("select");
+
+  hints.push(`Comece pela(s) tabela(s): ${Array.from(tables).join(", ")}.`);
+  if (terms.has("join")) hints.push("Defina a chave de ligacao antes de escolher as colunas finais.");
+  if (terms.has("group by")) hints.push("Confira se toda coluna sem agregacao tambem aparece no GROUP BY.");
+  if (terms.has("where")) hints.push("Separe filtros de linha no WHERE; filtros de grupo ficam no HAVING.");
+  if (terms.has("over")) hints.push("Use OVER para ranking, numeracao, acumulado ou comparacao com linha anterior.");
+  if (terms.has("case")) hints.push("Transforme as faixas de negocio em regras CASE bem explicitas.");
+  if (maxRows) hints.push(`Limite o resultado a ${maxRows} linha(s) depois de ordenar pelo indicador principal.`);
+  while (hints.length < 3) {
+    hints.push("Depois de executar, valide se a quantidade de linhas combina com a pergunta.");
+  }
+
+  if (includesAny(text, ["receita", "lucro", "margem", "ticket"])) {
+    challenge = "Interprete se esse indicador aponta crescimento, eficiencia, cliente prioritario ou risco comercial.";
+  } else if (includesAny(text, ["status", "pendente", "cancelado", "funil"])) {
+    challenge = "Use o resultado para pensar em gargalos operacionais e qualidade dos pedidos.";
+  } else if (includesAny(text, ["cliente", "segmento", "estado"])) {
+    challenge = "Compare o comportamento por cliente, segmento ou regiao antes de tirar conclusoes.";
+  } else if (includesAny(text, ["funcionario", "departamento", "salario"])) {
+    challenge = "Leia o resultado como um diagnostico interno de area, distribuicao ou senioridade.";
+  }
+
+  return {
+    goal,
+    hints: hints.slice(0, 4),
+    challenge,
+    checks: {
+      tables: Array.from(tables),
+      terms: Array.from(terms),
+      allowEmpty,
+      maxRows,
+    },
+  };
 }
 
 function getCurrentLevel() {
@@ -274,15 +382,74 @@ function renderTimeline() {
     row.querySelector("input").addEventListener("change", (event) => {
       storage.set(progressKey(step.id), event.target.checked);
       renderTimeline();
+      renderStudyMap();
     });
 
     container.appendChild(row);
   });
 }
 
+function renderStudyMap() {
+  const container = document.querySelector("#study-map");
+  if (!container) return;
+
+  container.innerHTML = timeline
+    .map((step, index) => {
+      const done = storage.get(progressKey(step.id), false);
+      const current = !done && timeline.slice(0, index).every((item) => storage.get(progressKey(item.id), false));
+      return `
+        <div class="map-step ${done ? "done" : ""} ${current ? "current" : ""}">
+          <span>${index + 1}</span>
+          <div>
+            <strong>${step.title}</strong>
+            <p>${step.text}</p>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 function exerciseDescription(level, exerciseIndex) {
   const total = level.exercises.length;
   return `Exercicio ${exerciseIndex + 1} de ${total}: ${level.exercises[exerciseIndex]}. Foco: ${level.focus}. Antes de abrir o gabarito, registre a tentativa e a validacao.`;
+}
+
+function getExerciseStatus(levelId, exerciseIndex) {
+  return storage.get(statusKey(levelId, exerciseIndex), {
+    status: "not-started",
+    score: 0,
+    label: "Nao iniciado",
+  });
+}
+
+function getAllExerciseStatuses() {
+  return levels.flatMap((level) =>
+    level.exercises.map((exercise, index) => ({
+      level,
+      exercise,
+      index,
+      status: getExerciseStatus(level.id, index),
+      attempted: storage.get(progressKey(`${level.id}-${index}`), false),
+    })),
+  );
+}
+
+function renderLabStats() {
+  const container = document.querySelector("#lab-stats");
+  if (!container) return;
+  const all = getAllExerciseStatuses();
+  const completed = all.filter((item) => item.status.status === "correct").length;
+  const almost = all.filter((item) => item.status.status === "almost").length;
+  const review = all.filter((item) => item.status.status === "review").length;
+  const attempted = all.filter((item) => item.attempted || item.status.status !== "not-started").length;
+
+  container.innerHTML = `
+    <span><strong>${completed}</strong> ok</span>
+    <span><strong>${almost}</strong> quase</span>
+    <span><strong>${review}</strong> revisar</span>
+    <span><strong>${attempted}</strong> tentativas</span>
+  `;
 }
 
 function renderLevelTabs() {
@@ -334,29 +501,44 @@ function renderExerciseList() {
     }
 
     const attempted = storage.get(progressKey(`${level.id}-${index}`), false);
+    const status = getExerciseStatus(level.id, index);
+    if (state.reviewOnly && status.status === "correct") {
+      return;
+    }
+
     const button = document.createElement("button");
     button.className = [
       "exercise-item",
       index === state.currentExercise ? "active" : "",
       attempted ? "done" : "",
+      `status-${status.status}`,
     ]
       .filter(Boolean)
       .join(" ");
     button.type = "button";
-    button.innerHTML = `<span>${index + 1}</span><span>${exercise}</span>`;
+    button.innerHTML = `
+      <span>${index + 1}</span>
+      <span>${exercise}<small>${status.label}</small></span>
+    `;
     button.addEventListener("click", () => {
       state.currentExercise = index;
+      state.visibleHints = storage.get(hintKey(level.id, state.currentExercise), 0);
       renderExerciseList();
       renderExercise();
     });
     container.appendChild(button);
   });
+
+  if (!container.children.length) {
+    container.innerHTML = `<div class="empty-list">Nenhum exercicio encontrado neste filtro.</div>`;
+  }
 }
 
 function renderExercise() {
   if (!document.querySelector("#exercise-title")) return;
   const level = getCurrentLevel();
   const title = level.exercises[state.currentExercise] ?? level.exercises[0];
+  state.visibleHints = storage.get(hintKey(level.id, state.currentExercise), 0);
   const attempted = storage.get(
     progressKey(`${level.id}-${state.currentExercise}`),
     false,
@@ -384,6 +566,85 @@ function renderExercise() {
   notes.value = storage.get(notesKey(level.id, state.currentExercise), "");
 
   renderSqlEditor();
+  renderExerciseAssist();
+  renderAttemptHistory();
+  renderLabStats();
+  renderReviewToggle();
+}
+
+function renderExerciseAssist() {
+  const goal = document.querySelector("#exercise-goal");
+  const hints = document.querySelector("#exercise-hints");
+  const challenge = document.querySelector("#bi-challenge");
+  const validation = document.querySelector("#sql-validation");
+  const insight = document.querySelector("#sql-insight");
+  if (!goal || !hints || !challenge) return;
+
+  const level = getCurrentLevel();
+  const guide = getExerciseGuide(level, state.currentExercise);
+  goal.textContent = guide.goal;
+  challenge.textContent = guide.challenge;
+  hints.innerHTML = guide.hints
+    .map((hint, index) => `<li class="${index < state.visibleHints ? "visible" : ""}">${hint}</li>`)
+    .join("");
+
+  if (validation) {
+    const status = getExerciseStatus(level.id, state.currentExercise);
+    validation.innerHTML =
+      status.status === "not-started"
+        ? ""
+        : `<div class="validation-card status-${status.status}">
+            <strong>${status.label}</strong>
+            <span>${status.score}% de aderencia aos criterios do exercicio.</span>
+          </div>`;
+  }
+  if (insight) insight.textContent = "";
+}
+
+function renderReviewToggle() {
+  const button = document.querySelector("#review-mode-toggle");
+  if (!button) return;
+  button.textContent = state.reviewOnly ? "Ver todos" : "Revisar pendencias";
+  button.classList.toggle("active-filter", state.reviewOnly);
+}
+
+function renderAttemptHistory() {
+  const container = document.querySelector("#attempt-history-list");
+  if (!container) return;
+  const level = getCurrentLevel();
+  const history = storage.get(historyKey(level.id, state.currentExercise), []);
+
+  if (!history.length) {
+    container.innerHTML = `<div class="empty-list">As execucoes deste exercicio aparecerao aqui.</div>`;
+    return;
+  }
+
+  container.innerHTML = history
+    .map(
+      (attempt, index) => `
+        <div class="attempt-row status-${attempt.status}">
+          <div>
+            <strong>${attempt.label}</strong>
+            <span>${attempt.when} - ${attempt.rowText}</span>
+          </div>
+          <button class="ghost-button restore-attempt" type="button" data-index="${index}">
+            Restaurar
+          </button>
+        </div>
+      `,
+    )
+    .join("");
+
+  container.querySelectorAll(".restore-attempt").forEach((button) => {
+    button.addEventListener("click", () => {
+      const attempt = history[Number(button.dataset.index)];
+      const editor = document.querySelector("#sql-editor");
+      if (!attempt || !editor) return;
+      editor.value = attempt.sql;
+      storage.set(editorKey(level.id, state.currentExercise), attempt.sql);
+      setSqlMessage("Tentativa restaurada no editor.");
+    });
+  });
 }
 
 function wireExerciseControls() {
@@ -425,6 +686,34 @@ function wireExerciseControls() {
 
   document.querySelector("#reset-sql-db")?.addEventListener("click", resetSqlDatabase);
 
+  document.querySelector("#show-next-hint")?.addEventListener("click", () => {
+    const level = getCurrentLevel();
+    const guide = getExerciseGuide(level, state.currentExercise);
+    state.visibleHints = Math.min(guide.hints.length, state.visibleHints + 1);
+    storage.set(hintKey(level.id, state.currentExercise), state.visibleHints);
+    renderExerciseAssist();
+  });
+
+  document.querySelector("#reset-hints")?.addEventListener("click", () => {
+    const level = getCurrentLevel();
+    state.visibleHints = 0;
+    storage.set(hintKey(level.id, state.currentExercise), state.visibleHints);
+    renderExerciseAssist();
+  });
+
+  document.querySelector("#review-mode-toggle")?.addEventListener("click", () => {
+    state.reviewOnly = !state.reviewOnly;
+    renderReviewToggle();
+    renderLevelTabs();
+    renderExerciseList();
+  });
+
+  document.querySelector("#clear-attempt-history")?.addEventListener("click", () => {
+    const level = getCurrentLevel();
+    localStorage.removeItem(historyKey(level.id, state.currentExercise));
+    renderAttemptHistory();
+  });
+
   document.querySelector("#exercise-search")?.addEventListener("input", () => {
     renderLevelTabs();
     renderExerciseList();
@@ -434,8 +723,10 @@ function wireExerciseControls() {
     const keys = Object.keys(localStorage).filter((key) => key.startsWith("sql-estudo-"));
     keys.forEach((key) => localStorage.removeItem(key));
     renderTimeline();
+    renderStudyMap();
     renderExerciseList();
     renderExercise();
+    renderLabStats();
   });
 
   document.querySelector("#answer-file")?.addEventListener("click", (event) => {
@@ -568,6 +859,123 @@ function renderSqlResults(results) {
     .join("");
 }
 
+function evaluateAttempt(sql, results) {
+  const level = getCurrentLevel();
+  const guide = getExerciseGuide(level, state.currentExercise);
+  const normalized = normalizeSql(sql);
+  const first = results[0];
+  const rowCount = first?.rowCount ?? 0;
+  const checks = [];
+
+  checks.push({
+    ok: Boolean(first) && (rowCount > 0 || guide.checks.allowEmpty),
+    text: guide.checks.allowEmpty
+      ? "Resultado vazio pode fazer sentido neste exercicio."
+      : "A consulta retornou linhas para analisar.",
+  });
+
+  guide.checks.tables.forEach((table) => {
+    checks.push({
+      ok: normalized.includes(table),
+      text: `Usa a tabela ${table}.`,
+    });
+  });
+
+  guide.checks.terms.forEach((term) => {
+    const ok =
+      term === "select"
+        ? normalized.trim().startsWith("select") || normalized.trim().startsWith("with")
+        : normalized.includes(term);
+    checks.push({
+      ok,
+      text: `Inclui ${term.toUpperCase()}.`,
+    });
+  });
+
+  if (guide.checks.maxRows) {
+    checks.push({
+      ok: rowCount <= guide.checks.maxRows,
+      text: `Limita o retorno a no maximo ${guide.checks.maxRows} linha(s).`,
+    });
+  }
+
+  const passed = checks.filter((check) => check.ok).length;
+  const score = Math.round((passed / checks.length) * 100);
+  const status = score >= 85 ? "correct" : score >= 55 ? "almost" : "review";
+  const label =
+    status === "correct"
+      ? "Ok"
+      : status === "almost"
+        ? "Quase"
+        : "Revisar";
+
+  return { status, label, score, checks };
+}
+
+function describeSqlResult(sql, results, evaluation) {
+  const first = results[0];
+  if (!first) return "A consulta executou, mas nao trouxe tabela de resultado para analisar.";
+  const normalized = normalizeSql(sql);
+  const parts = [
+    `Retornou ${first.rowCount} linha(s) e ${first.columns.length} coluna(s).`,
+  ];
+
+  if (normalized.includes("join")) parts.push("Ha relacionamento entre tabelas.");
+  if (normalized.includes("where")) parts.push("Ha filtro aplicado antes do resultado.");
+  if (normalized.includes("group by")) parts.push("Ha agrupamento, entao confira a granularidade.");
+  if (normalized.includes("order by")) parts.push("A ordenacao ajuda a ler prioridade ou ranking.");
+  if (normalized.includes("over")) parts.push("Foi usada logica analitica por janela.");
+  if (first.truncated) parts.push("O retorno foi cortado nas 100 primeiras linhas.");
+  parts.push(`Status do exercicio: ${evaluation.label.toLowerCase()}.`);
+
+  return parts.join(" ");
+}
+
+function saveAttempt(sql, results, evaluation) {
+  const level = getCurrentLevel();
+  const first = results[0];
+  const history = storage.get(historyKey(level.id, state.currentExercise), []);
+  const now = new Date();
+  const attempt = {
+    sql,
+    status: evaluation.status,
+    label: evaluation.label,
+    score: evaluation.score,
+    rowText: first
+      ? `${first.rowCount} linha(s), ${first.columns.length} coluna(s)`
+      : "sem retorno tabular",
+    when: now.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+
+  storage.set(statusKey(level.id, state.currentExercise), {
+    status: evaluation.status,
+    score: evaluation.score,
+    label: evaluation.label,
+  });
+  storage.set(progressKey(`${level.id}-${state.currentExercise}`), true);
+  storage.set(historyKey(level.id, state.currentExercise), [attempt, ...history].slice(0, 8));
+}
+
+function renderValidation(evaluation) {
+  const container = document.querySelector("#sql-validation");
+  if (!container) return;
+  container.innerHTML = `
+    <div class="validation-card status-${evaluation.status}">
+      <strong>${evaluation.label} - ${evaluation.score}%</strong>
+      <ul>
+        ${evaluation.checks
+          .map((check) => `<li class="${check.ok ? "ok" : "missing"}">${check.text}</li>`)
+          .join("")}
+      </ul>
+    </div>
+  `;
+}
+
 function formatSqlValue(value) {
   if (value === null || value === undefined) return "NULL";
   if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
@@ -675,10 +1083,26 @@ function runCurrentSql() {
     .then(({ results }) => {
       renderSqlResults(results);
       const first = results[0];
+      const evaluation = evaluateAttempt(sql, results);
+      const insight = describeSqlResult(sql, results, evaluation);
+      const insightBox = document.querySelector("#sql-insight");
       const rowText = first
         ? `${first.rowCount} linha(s) retornada(s)${first.truncated ? ", exibindo as 100 primeiras" : ""}`
         : "consulta sem linhas de retorno";
       setSqlMessage(`Executado em ${first?.elapsedMs ?? 0} ms: ${rowText}.`);
+      if (insightBox) insightBox.textContent = insight;
+      renderValidation(evaluation);
+      saveAttempt(sql, results, evaluation);
+      renderExerciseList();
+      renderAttemptHistory();
+      renderLabStats();
+      const check = document.querySelector("#attempt-check");
+      if (check) check.checked = true;
+      const answerFile = document.querySelector("#answer-file");
+      if (answerFile) {
+        answerFile.classList.remove("disabled-link");
+        answerFile.setAttribute("aria-disabled", "false");
+      }
     })
     .catch((error) => {
       setSqlMessage(error.message, true);
@@ -736,9 +1160,11 @@ function initApp() {
   redirectLegacyHashRoutes();
   markCurrentPage();
   renderTimeline();
+  renderStudyMap();
   renderLevelTabs();
   renderExerciseList();
   renderExercise();
+  renderLabStats();
   renderReferences();
   renderTimer();
   wireExerciseControls();
