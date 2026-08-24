@@ -717,7 +717,23 @@ function markCurrentPage() {
   });
 }
 
+function redirectLegacyHashRoutes() {
+  if (document.body.dataset.page !== "home") return;
+
+  const routes = {
+    "#trilha": "trilha.html",
+    "#laboratorio": "laboratorio.html",
+    "#execucao": "laboratorio.html#execucao",
+    "#base": "base.html",
+  };
+  const target = routes[window.location.hash];
+  if (target) {
+    window.location.replace(target);
+  }
+}
+
 function initApp() {
+  redirectLegacyHashRoutes();
   markCurrentPage();
   renderTimeline();
   renderLevelTabs();
