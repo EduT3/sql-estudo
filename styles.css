@@ -40,6 +40,10 @@ textarea {
   font: inherit;
 }
 
+textarea {
+  line-height: 1.45;
+}
+
 .topbar {
   align-items: center;
   background: rgba(247, 248, 246, 0.94);
@@ -542,6 +546,153 @@ main {
   width: 100%;
 }
 
+.sql-runner {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.runner-heading {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.runner-heading h4 {
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  line-height: 1.15;
+  margin: 4px 0 0;
+}
+
+.status-pill {
+  background: #f3f6f5;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+  padding: 8px 11px;
+  text-align: center;
+}
+
+.status-pill.ready {
+  background: rgba(15, 118, 110, 0.12);
+  border-color: rgba(15, 118, 110, 0.35);
+  color: var(--accent-dark);
+}
+
+.status-pill.error {
+  background: rgba(173, 107, 24, 0.12);
+  border-color: rgba(173, 107, 24, 0.35);
+  color: #7a4710;
+}
+
+.sql-editor-box {
+  display: grid;
+  gap: 6px;
+}
+
+.sql-editor-box span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.sql-editor-box textarea {
+  background: #101817;
+  border: 1px solid #263432;
+  border-radius: 8px;
+  color: #eaf4f1;
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  min-height: 260px;
+  outline: none;
+  padding: 14px;
+  resize: vertical;
+  tab-size: 2;
+  width: 100%;
+}
+
+.sql-editor-box textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+}
+
+.runner-actions,
+.runner-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.runner-rules span {
+  background: #f7f8f6;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 7px 10px;
+}
+
+.sql-message {
+  color: var(--muted);
+  font-weight: 800;
+  min-height: 22px;
+}
+
+.sql-message.error {
+  color: #8c3f1b;
+}
+
+.sql-result {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-height: 420px;
+  min-height: 80px;
+  overflow: auto;
+}
+
+.sql-result.empty {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  justify-content: center;
+  padding: 18px;
+}
+
+.sql-result table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 100%;
+}
+
+.sql-result th,
+.sql-result td {
+  border-bottom: 1px solid var(--line);
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.sql-result th {
+  background: #f7f8f6;
+  color: var(--accent-dark);
+  font-size: 0.78rem;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+  z-index: 1;
+}
+
+.sql-result td {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
 .reference-grid {
   display: grid;
   gap: 18px;
@@ -597,7 +748,8 @@ footer {
 @media (max-width: 680px) {
   .topbar,
   .section-heading,
-  .exercise-header {
+  .exercise-header,
+  .runner-heading {
     align-items: stretch;
     flex-direction: column;
   }

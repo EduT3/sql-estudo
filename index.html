@@ -20,6 +20,7 @@
       <nav aria-label="Navegação principal">
         <a href="#trilha">Trilha</a>
         <a href="#laboratorio">Laboratório</a>
+        <a href="#execucao">Execução</a>
         <a href="#base">Base</a>
       </nav>
     </header>
@@ -121,6 +122,45 @@
                 placeholder="Hipótese, granularidade, JOINs usados, validações e dúvidas."
               ></textarea>
             </label>
+
+            <section id="execucao" class="sql-runner" aria-labelledby="sql-runner-title">
+              <div class="runner-heading">
+                <div>
+                  <p class="eyebrow">Execução segura</p>
+                  <h4 id="sql-runner-title">SQLite em memória</h4>
+                </div>
+                <span id="sql-engine-status" class="status-pill">Carregando motor SQL</span>
+              </div>
+
+              <label class="sql-editor-box">
+                <span>Consulta SQL</span>
+                <textarea
+                  id="sql-editor"
+                  rows="11"
+                  spellcheck="false"
+                  placeholder="Escreva uma consulta SELECT ou WITH e execute com Ctrl+Enter."
+                ></textarea>
+              </label>
+
+              <div class="runner-actions">
+                <button id="run-sql" class="primary-button" type="button">Executar</button>
+                <button id="load-starter-sql" class="ghost-button" type="button">
+                  Carregar modelo
+                </button>
+                <button id="reset-sql-db" class="ghost-button" type="button">
+                  Restaurar base
+                </button>
+              </div>
+
+              <div class="runner-rules" aria-label="Regras de segurança">
+                <span>Permitido: SELECT e WITH</span>
+                <span>Bloqueado: INSERT, UPDATE, DELETE, DROP, ALTER, PRAGMA e similares</span>
+                <span>Limite: 100 linhas exibidas e interrupção de consulta longa</span>
+              </div>
+
+              <div id="sql-message" class="sql-message" role="status"></div>
+              <div id="sql-result" class="sql-result" aria-live="polite"></div>
+            </section>
           </article>
         </div>
       </section>

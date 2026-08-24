@@ -181,6 +181,13 @@ const state = {
   timerId: null,
 };
 
+const sqlLab = {
+  worker: null,
+  pending: new Map(),
+  ready: false,
+  lastRunId: 0,
+};
+
 const storage = {
   get(key, fallback) {
     try {
@@ -202,8 +209,48 @@ function notesKey(levelId, exerciseIndex) {
   return `sql-estudo-notes-${levelId}-${exerciseIndex}`;
 }
 
+function editorKey(levelId, exerciseIndex) {
+  return `sql-estudo-editor-${levelId}-${exerciseIndex}`;
+}
+
 function getCurrentLevel() {
   return levels.find((level) => level.id === state.currentLevel) ?? levels[0];
+}
+
+function getStarterSql(level, exerciseIndex) {
+  const exercise = level.exercises[exerciseIndex] ?? level.exercises[0];
+  const starters = {
+    "nivel-1": [
+      "SELECT\n  -- colunas\nFROM funcionarios\n-- ORDER BY coluna DESC;",
+      "SELECT\n  -- colunas\nFROM funcionarios\n-- WHERE departamento_id = ?;",
+      "SELECT\n  -- colunas\nFROM produtos\n-- WHERE preco > ?;",
+      "SELECT\n  -- colunas\nFROM produtos\n-- ORDER BY coluna ASC\n-- LIMIT ?;",
+      "SELECT\n  -- colunas\nFROM clientes\n-- WHERE estado = ?;",
+    ],
+    "nivel-2": [
+      "SELECT\n  d.nome,\n  COUNT(*) AS total\nFROM funcionarios f\nJOIN departamentos d ON d.id = f.departamento_id\nGROUP BY d.nome;",
+      "SELECT\n  d.nome,\n  -- agregacoes de salario\nFROM funcionarios f\nJOIN departamentos d ON d.id = f.departamento_id\nGROUP BY d.nome;",
+      "SELECT\n  d.nome,\n  COUNT(*) AS total\nFROM funcionarios f\nJOIN departamentos d ON d.id = f.departamento_id\nGROUP BY d.nome\n-- HAVING COUNT(*) > ?;",
+    ],
+    "nivel-3": [
+      "SELECT nome, cargo, salario\nFROM funcionarios\nWHERE salario > (\n  SELECT AVG(salario)\n  FROM funcionarios\n);",
+      "SELECT p.nome, p.categoria\nFROM produtos p\nWHERE p.id NOT IN (\n  SELECT produto_id\n  FROM itens_pedido\n);",
+      "SELECT d.nome AS departamento,\n       f.nome AS funcionario,\n       f.salario\nFROM funcionarios f\nJOIN departamentos d ON d.id = f.departamento_id\n-- complete a subquery correlacionada aqui;",
+    ],
+    "nivel-4": [
+      "SELECT\n  -- receita = quantidade * preco_unit\n  -- custo = quantidade * custo\n  -- lucro = receita - custo\nFROM pedidos p\nJOIN itens_pedido ip ON ip.pedido_id = p.id\nJOIN produtos pr ON pr.id = ip.produto_id\nWHERE p.status = 'Entregue';",
+      "SELECT\n  pr.categoria,\n  -- receita, lucro e margem\nFROM pedidos p\nJOIN itens_pedido ip ON ip.pedido_id = p.id\nJOIN produtos pr ON pr.id = ip.produto_id\nWHERE p.status = 'Entregue'\nGROUP BY pr.categoria;",
+    ],
+    "nivel-5": [
+      "SELECT\n  p.id AS pedido_id,\n  p.data,\n  p.status,\n  c.nome AS cliente,\n  pr.nome AS produto\nFROM pedidos p\nJOIN clientes c ON c.id = p.cliente_id\nJOIN itens_pedido ip ON ip.pedido_id = p.id\nJOIN produtos pr ON pr.id = ip.produto_id\nLIMIT 20;",
+    ],
+  };
+
+  const levelStarters = starters[level.id] ?? [];
+  return (
+    levelStarters[exerciseIndex] ??
+    `-- ${level.title}: ${exercise}\n-- Escreva sua consulta de leitura abaixo.\n\nSELECT *\nFROM pedidos\nLIMIT 10;`
+  );
 }
 
 function renderTimeline() {
@@ -329,6 +376,8 @@ function renderExercise() {
 
   const notes = document.querySelector("#exercise-notes");
   notes.value = storage.get(notesKey(level.id, state.currentExercise), "");
+
+  renderSqlEditor();
 }
 
 function wireExerciseControls() {
@@ -343,6 +392,29 @@ function wireExerciseControls() {
     const level = getCurrentLevel();
     storage.set(notesKey(level.id, state.currentExercise), event.target.value);
   });
+
+  document.querySelector("#sql-editor").addEventListener("input", (event) => {
+    const level = getCurrentLevel();
+    storage.set(editorKey(level.id, state.currentExercise), event.target.value);
+  });
+
+  document.querySelector("#sql-editor").addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      runCurrentSql();
+    }
+  });
+
+  document.querySelector("#run-sql").addEventListener("click", runCurrentSql);
+
+  document.querySelector("#load-starter-sql").addEventListener("click", () => {
+    const level = getCurrentLevel();
+    const starter = getStarterSql(level, state.currentExercise);
+    document.querySelector("#sql-editor").value = starter;
+    storage.set(editorKey(level.id, state.currentExercise), starter);
+  });
+
+  document.querySelector("#reset-sql-db").addEventListener("click", resetSqlDatabase);
 
   document.querySelector("#exercise-search").addEventListener("input", () => {
     renderLevelTabs();
@@ -415,6 +487,198 @@ function renderReferences() {
     .join("");
 }
 
+function renderSqlEditor() {
+  const level = getCurrentLevel();
+  const key = editorKey(level.id, state.currentExercise);
+  const saved = storage.get(key, null);
+  document.querySelector("#sql-editor").value =
+    saved === null ? getStarterSql(level, state.currentExercise) : saved;
+}
+
+function setSqlStatus(message, mode = "") {
+  const status = document.querySelector("#sql-engine-status");
+  status.textContent = message;
+  status.className = `status-pill ${mode}`.trim();
+}
+
+function setSqlMessage(message, isError = false) {
+  const output = document.querySelector("#sql-message");
+  output.textContent = message;
+  output.classList.toggle("error", isError);
+}
+
+function renderSqlEmpty(message) {
+  const container = document.querySelector("#sql-result");
+  container.className = "sql-result empty";
+  container.textContent = message;
+}
+
+function renderSqlResults(results) {
+  const container = document.querySelector("#sql-result");
+  container.className = "sql-result";
+
+  if (!results.length) {
+    renderSqlEmpty("Consulta executada sem linhas de retorno.");
+    return;
+  }
+
+  container.innerHTML = results
+    .map((result, index) => {
+      const head = result.columns
+        .map((column) => `<th>${escapeHtml(column)}</th>`)
+        .join("");
+      const rows = result.rows
+        .map(
+          (row) =>
+            `<tr>${row
+              .map((value) => `<td>${escapeHtml(formatSqlValue(value))}</td>`)
+              .join("")}</tr>`,
+        )
+        .join("");
+      const caption =
+        results.length > 1
+          ? `<caption>Resultado ${index + 1}</caption>`
+          : "";
+
+      return `<table>${caption}<thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>`;
+    })
+    .join("");
+}
+
+function formatSqlValue(value) {
+  if (value === null || value === undefined) return "NULL";
+  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  return String(value);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function terminateSqlWorker() {
+  if (sqlLab.worker) {
+    sqlLab.worker.terminate();
+  }
+  sqlLab.worker = null;
+  sqlLab.ready = false;
+  sqlLab.pending.forEach(({ reject, timer }) => {
+    clearTimeout(timer);
+    reject(new Error("Execucao interrompida."));
+  });
+  sqlLab.pending.clear();
+}
+
+function createSqlWorker() {
+  if (!window.Worker) {
+    setSqlStatus("Worker indisponivel", "error");
+    setSqlMessage("Seu navegador nao suporta a execucao isolada do laboratorio SQL.", true);
+    return;
+  }
+
+  terminateSqlWorker();
+  setSqlStatus("Carregando motor SQL");
+  sqlLab.worker = new Worker("sql-worker.js");
+  sqlLab.worker.onmessage = handleSqlWorkerMessage;
+  sqlLab.worker.onerror = () => {
+    setSqlStatus("Erro no motor SQL", "error");
+    setSqlMessage("Nao foi possivel iniciar o SQLite no navegador.", true);
+  };
+
+  postSqlMessage("init", {}, 15000)
+    .then((payload) => {
+      sqlLab.ready = true;
+      setSqlStatus("Base em memoria pronta", "ready");
+      const total = payload.counts.reduce((sum, item) => sum + item.count, 0);
+      setSqlMessage(`Base carregada com ${payload.counts.length} tabelas e ${total} registros.`);
+      renderSqlEmpty("Execute uma consulta para ver os resultados.");
+    })
+    .catch((error) => {
+      setSqlStatus("Erro no motor SQL", "error");
+      setSqlMessage(error.message, true);
+      renderSqlEmpty("Aguardando o motor SQL.");
+    });
+}
+
+function handleSqlWorkerMessage(event) {
+  const { id, type, message, results, counts } = event.data;
+  const pending = sqlLab.pending.get(id);
+  if (!pending) return;
+
+  clearTimeout(pending.timer);
+  sqlLab.pending.delete(id);
+
+  if (type === "error") {
+    pending.reject(new Error(message));
+    return;
+  }
+
+  pending.resolve({ type, results, counts });
+}
+
+function postSqlMessage(type, payload = {}, timeoutMs = 4500) {
+  return new Promise((resolve, reject) => {
+    if (!sqlLab.worker) {
+      reject(new Error("Motor SQL indisponivel."));
+      return;
+    }
+
+    const id = `${Date.now()}-${++sqlLab.lastRunId}`;
+    const timer = setTimeout(() => {
+      sqlLab.pending.delete(id);
+      terminateSqlWorker();
+      createSqlWorker();
+      reject(new Error("Consulta interrompida por tempo limite. A base foi recriada em memoria."));
+    }, timeoutMs);
+
+    sqlLab.pending.set(id, { resolve, reject, timer });
+    sqlLab.worker.postMessage({ id, type, ...payload });
+  });
+}
+
+function runCurrentSql() {
+  const sql = document.querySelector("#sql-editor").value;
+  const runButton = document.querySelector("#run-sql");
+  runButton.disabled = true;
+  setSqlMessage("Executando consulta...");
+
+  postSqlMessage("run", { sql })
+    .then(({ results }) => {
+      renderSqlResults(results);
+      const first = results[0];
+      const rowText = first
+        ? `${first.rowCount} linha(s) retornada(s)${first.truncated ? ", exibindo as 100 primeiras" : ""}`
+        : "consulta sem linhas de retorno";
+      setSqlMessage(`Executado em ${first?.elapsedMs ?? 0} ms: ${rowText}.`);
+    })
+    .catch((error) => {
+      setSqlMessage(error.message, true);
+      renderSqlEmpty("Corrija a consulta e tente novamente.");
+    })
+    .finally(() => {
+      runButton.disabled = false;
+    });
+}
+
+function resetSqlDatabase() {
+  setSqlMessage("Restaurando a base em memoria...");
+  postSqlMessage("reset", {}, 15000)
+    .then((payload) => {
+      sqlLab.ready = true;
+      setSqlStatus("Base em memoria pronta", "ready");
+      const total = payload.counts.reduce((sum, item) => sum + item.count, 0);
+      setSqlMessage(`Base restaurada com ${payload.counts.length} tabelas e ${total} registros.`);
+      renderSqlEmpty("Execute uma consulta para ver os resultados.");
+    })
+    .catch((error) => {
+      setSqlStatus("Erro no motor SQL", "error");
+      setSqlMessage(error.message, true);
+    });
+}
+
 renderTimeline();
 renderLevelTabs();
 renderExerciseList();
@@ -423,3 +687,4 @@ renderReferences();
 renderTimer();
 wireExerciseControls();
 wireTimer();
+createSqlWorker();
