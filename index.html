@@ -42,14 +42,33 @@
             <span><strong>local</strong> histórico no navegador</span>
           </div>
         </div>
-        <div class="schema-visual" aria-label="Mapa visual da base SQL">
-          <span class="node node-main">pedidos</span>
-          <span class="line line-a"></span>
-          <span class="line line-b"></span>
-          <span class="line line-c"></span>
-          <span class="node node-left">clientes</span>
-          <span class="node node-right">itens_pedido</span>
-          <span class="node node-bottom">produtos</span>
+        <div class="study-preview" aria-label="Prévia de uma sessão de estudo">
+          <div class="preview-header">
+            <span>Nível 2</span>
+            <strong>JOIN + GROUP BY</strong>
+          </div>
+          <div class="query-card">
+            <span>Consulta em estudo</span>
+            <pre><code>SELECT c.nome, COUNT(p.id) AS pedidos
+FROM clientes c
+JOIN pedidos p ON p.cliente_id = c.id
+GROUP BY c.nome
+ORDER BY pedidos DESC;</code></pre>
+          </div>
+          <div class="mini-result">
+            <div>
+              <span>Status</span>
+              <strong>Quase</strong>
+            </div>
+            <div>
+              <span>Retorno</span>
+              <strong>15 linhas</strong>
+            </div>
+            <div>
+              <span>Próximo passo</span>
+              <strong>validar filtros</strong>
+            </div>
+          </div>
         </div>
       </section>
 
