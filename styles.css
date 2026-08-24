@@ -1,10 +1,14 @@
 :root {
-  --bg: #f5f7fb;
-  --surface: #ffffff;
-  --surface-muted: #edf2f7;
+  --bg: #e8edf5;
+  --surface: #f4f7fb;
+  --surface-raised: #fafbfd;
+  --surface-muted: #e3ebf4;
+  --surface-blue: #eaf2ff;
+  --surface-teal: #e9f7f4;
+  --surface-warm: #fff3e4;
   --text: #18202a;
   --muted: #617083;
-  --line: #d6deea;
+  --line: #c9d3e2;
   --accent: #2563eb;
   --accent-dark: #1d4ed8;
   --teal: #0f766e;
@@ -12,7 +16,7 @@
   --amber: #b45309;
   --rose: #be3a5a;
   --indigo: #4f46e5;
-  --shadow: 0 18px 45px rgba(33, 50, 74, 0.09);
+  --shadow: 0 18px 45px rgba(33, 50, 74, 0.11);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -28,7 +32,9 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.09), transparent 32rem),
+    linear-gradient(180deg, #e8edf5 0%, #f0f3f7 46%, #e7edf4 100%);
   color: var(--text);
 }
 
@@ -49,7 +55,7 @@ textarea {
 
 .topbar {
   align-items: center;
-  background: rgba(245, 247, 251, 0.94);
+  background: rgba(232, 237, 245, 0.95);
   border-bottom: 1px solid var(--line);
   display: flex;
   gap: 24px;
@@ -92,7 +98,7 @@ textarea {
 }
 
 .topbar nav a.active {
-  background: #eff6ff;
+  background: var(--surface-blue);
   border: 1px solid rgba(37, 99, 235, 0.18);
   color: var(--accent-dark);
   font-weight: 800;
@@ -173,7 +179,7 @@ main {
 
 .metrics span {
   align-items: baseline;
-  background: var(--surface);
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: inline-flex;
@@ -193,7 +199,7 @@ main {
 }
 
 .home-card {
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-top: 4px solid var(--accent);
   border-radius: 8px;
@@ -243,7 +249,7 @@ main {
 .schema-visual {
   background:
     linear-gradient(90deg, rgba(37, 99, 235, 0.07) 1px, transparent 1px),
-    linear-gradient(rgba(15, 118, 110, 0.06) 1px, transparent 1px), #ffffff;
+    linear-gradient(rgba(15, 118, 110, 0.06) 1px, transparent 1px), var(--surface);
   background-size: 28px 28px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -255,7 +261,7 @@ main {
 
 .node {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-left: 5px solid var(--accent);
   border-radius: 8px;
@@ -323,7 +329,7 @@ main {
 }
 
 .section-band {
-  background: var(--surface);
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -331,7 +337,7 @@ main {
 }
 
 .section-band.muted {
-  background: linear-gradient(180deg, #f8fafc 0%, var(--surface-muted) 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-muted) 100%);
 }
 
 .section-heading {
@@ -355,7 +361,7 @@ main {
 }
 
 .ghost-button {
-  background: #ffffff;
+  background: var(--surface-raised);
   color: var(--text);
 }
 
@@ -383,7 +389,7 @@ main {
 }
 
 .map-step {
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: grid;
@@ -394,7 +400,7 @@ main {
 
 .map-step span {
   align-items: center;
-  background: #e0f2fe;
+  background: var(--surface-blue);
   border-radius: 999px;
   color: var(--accent-dark);
   display: inline-flex;
@@ -418,7 +424,7 @@ main {
 }
 
 .map-step.done {
-  background: #f0fdfa;
+  background: var(--surface-teal);
   border-color: rgba(15, 118, 110, 0.32);
 }
 
@@ -439,7 +445,7 @@ main {
 
 .step-row {
   align-items: center;
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: grid;
@@ -449,7 +455,7 @@ main {
 }
 
 .step-row.done {
-  background: #f0fdfa;
+  background: var(--surface-teal);
   border-color: rgba(15, 118, 110, 0.32);
 }
 
@@ -491,7 +497,7 @@ main {
 
 .search-box input,
 .notes-box textarea {
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--text);
@@ -526,7 +532,7 @@ main {
 
 .lab-stats span {
   align-items: baseline;
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
@@ -543,7 +549,7 @@ main {
 }
 
 .active-filter {
-  background: #eff6ff;
+  background: var(--surface-blue);
   border-color: rgba(37, 99, 235, 0.3);
   color: var(--accent-dark);
 }
@@ -556,7 +562,7 @@ main {
 
 .level-panel,
 .exercise-panel {
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   border-radius: 8px;
 }
@@ -601,7 +607,7 @@ main {
 
 .level-tab.active,
 .level-tab:hover {
-  background: #eff6ff;
+  background: var(--surface-blue);
   border-color: rgba(37, 99, 235, 0.18);
 }
 
@@ -623,7 +629,7 @@ main {
 
 .exercise-item span:first-child {
   align-items: center;
-  background: #e0f2fe;
+  background: var(--surface-blue);
   border-radius: 999px;
   color: var(--accent-dark);
   display: inline-flex;
@@ -636,7 +642,7 @@ main {
 
 .exercise-item.active,
 .exercise-item:hover {
-  background: #f8fbff;
+  background: var(--surface-blue);
   border-color: rgba(37, 99, 235, 0.18);
   color: var(--text);
 }
@@ -660,12 +666,12 @@ main {
 }
 
 .exercise-item.status-almost span:first-child {
-  background: #fef3c7;
+  background: #fde9bd;
   color: #92400e;
 }
 
 .exercise-item.status-review span:first-child {
-  background: #ffe4e6;
+  background: #f9dce3;
   color: #9f2746;
 }
 
@@ -697,7 +703,7 @@ main {
 
 .timer {
   align-items: center;
-  background: #fff7ed;
+  background: var(--surface-warm);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: flex;
@@ -713,7 +719,7 @@ main {
 }
 
 .icon-button {
-  background: #ffffff;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   color: var(--text);
   cursor: pointer;
@@ -736,7 +742,7 @@ main {
 }
 
 .assist-card {
-  background: #f8fafc;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   display: grid;
@@ -781,7 +787,7 @@ main {
 }
 
 .bi-card {
-  background: #fff7ed;
+  background: var(--surface-warm);
 }
 
 .exercise-actions {
@@ -833,7 +839,7 @@ main {
 }
 
 .status-pill {
-  background: #f8fafc;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
@@ -888,7 +894,7 @@ main {
 }
 
 .runner-rules span {
-  background: #f8fafc;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
@@ -908,7 +914,7 @@ main {
 }
 
 .sql-insight {
-  background: #eff6ff;
+  background: var(--surface-blue);
   border: 1px solid rgba(37, 99, 235, 0.2);
   border-radius: 8px;
   color: var(--accent-dark);
@@ -967,17 +973,17 @@ main {
 }
 
 .status-correct {
-  background: #f0fdfa;
+  background: var(--surface-teal);
   border-color: rgba(15, 118, 110, 0.3);
 }
 
 .status-almost {
-  background: #fff7ed;
+  background: var(--surface-warm);
   border-color: rgba(180, 83, 9, 0.28);
 }
 
 .status-review {
-  background: #fff1f2;
+  background: #fae8ed;
   border-color: rgba(190, 58, 90, 0.26);
 }
 
@@ -1013,7 +1019,7 @@ main {
 }
 
 .sql-result th {
-  background: #eff6ff;
+  background: var(--surface-blue);
   color: var(--accent-dark);
   font-size: 0.78rem;
   position: sticky;
