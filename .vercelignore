@@ -1,0 +1,8 @@
+# Arquivos locais que nao devem entrar no deploy estatico.
+dados/
+.git/
+.vercel/
+__pycache__/
+*.pyc
+.venv/
+venv/
