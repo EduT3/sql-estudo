@@ -311,6 +311,7 @@ const timeline = [
 
 const state = {
   currentLevel: levels[0].id,
+  currentCourseLevel: levels[0].id,
   currentExercise: 0,
   timerSeconds: 25 * 60,
   timerId: null,
@@ -520,6 +521,15 @@ function renderTimeline() {
       renderStudyMap();
     });
 
+    row.querySelector(".source-link").addEventListener("click", (event) => {
+      const href = event.currentTarget.getAttribute("href") || "";
+      if (!href.startsWith("#aulas-nivel-")) return;
+      event.preventDefault();
+      state.currentCourseLevel = href.replace("#aulas-", "");
+      renderCourseModules();
+      document.querySelector("#aulas")?.scrollIntoView({ behavior: "smooth" });
+    });
+
     container.appendChild(row);
   });
 }
@@ -549,55 +559,82 @@ function renderCourseModules() {
   const container = document.querySelector("#course-modules");
   if (!container) return;
 
-  container.innerHTML = levels
-    .map((level) => {
-      const lesson = levelLessons[level.id];
-      return `
-        <article id="aulas-${level.id}" class="course-card">
-          <div class="course-card-header">
-            <div>
-              <p class="eyebrow">${level.title}</p>
-              <h3>${level.focus}</h3>
-            </div>
-            <span>${level.exercises.length} exercicios</span>
+  const selectedLevel =
+    levels.find((level) => level.id === state.currentCourseLevel) ?? levels[0];
+  const lesson = levelLessons[selectedLevel.id];
+
+  container.innerHTML = `
+    <div class="course-workspace">
+      <aside class="course-nav" aria-label="Módulos da trilha">
+        ${levels
+          .map(
+            (level) => `
+              <button class="course-tab${level.id === selectedLevel.id ? " active" : ""}" type="button" data-level-id="${level.id}">
+                <span>${level.title}</span>
+                <strong>${level.focus}</strong>
+                <small>${level.notion}</small>
+              </button>
+            `,
+          )
+          .join("")}
+      </aside>
+
+      <article id="aulas-${selectedLevel.id}" class="course-card">
+        <div class="course-card-header">
+          <div>
+            <p class="eyebrow">${selectedLevel.title}</p>
+            <h3>${selectedLevel.focus}</h3>
           </div>
-          <p>${lesson.summary}</p>
-          <div class="course-split">
-            <div>
-              <strong>O que estudar</strong>
-              <ul>
-                ${lesson.learn.map((item) => `<li>${item}</li>`).join("")}
-              </ul>
-            </div>
-            <div>
-              <strong>Erros comuns</strong>
-              <ul>
-                ${lesson.mistakes.map((item) => `<li>${item}</li>`).join("")}
-              </ul>
-            </div>
-          </div>
-          <div class="lesson-example">
+          <span>${selectedLevel.exercises.length} exercicios</span>
+        </div>
+        <p>${lesson.summary}</p>
+
+        <div class="course-sections">
+          <section class="lesson-block">
+            <strong>O que estudar</strong>
+            <ul>
+              ${lesson.learn.map((item) => `<li>${item}</li>`).join("")}
+            </ul>
+          </section>
+
+          <section class="lesson-example">
             <span>${lesson.exampleTitle}</span>
             <pre><code>${escapeHtml(lesson.exampleSql)}</code></pre>
-          </div>
-          <div class="exercise-outline">
+          </section>
+
+          <section class="lesson-block">
+            <strong>Erros comuns</strong>
+            <ul>
+              ${lesson.mistakes.map((item) => `<li>${item}</li>`).join("")}
+            </ul>
+          </section>
+
+          <section class="exercise-outline">
             <strong>Sequencia de pratica</strong>
             <ol>
-              ${level.exercises.map((exercise) => `<li>${exercise}</li>`).join("")}
+              ${selectedLevel.exercises.map((exercise) => `<li>${exercise}</li>`).join("")}
             </ol>
-          </div>
-          <p class="practice-note">${lesson.practice}</p>
-          <div class="course-actions">
-            <a class="primary-button" href="laboratorio.html?level=${level.id}">Praticar no laboratorio</a>
-            <button class="ghost-button course-resource-button" type="button" data-path="${level.file}" data-title="${level.title} - caderno de exercicios" data-target="#course-resource-${level.id}">
-              Ler caderno SQL aqui
-            </button>
-          </div>
-          <div id="course-resource-${level.id}" class="resource-viewer compact" aria-live="polite"></div>
-        </article>
-      `;
-    })
-    .join("");
+          </section>
+        </div>
+
+        <p class="practice-note">${lesson.practice}</p>
+        <div class="course-actions">
+          <a class="primary-button" href="laboratorio.html?level=${selectedLevel.id}">Praticar no laboratorio</a>
+          <button class="ghost-button course-resource-button" type="button" data-path="${selectedLevel.file}" data-title="${selectedLevel.title} - caderno de exercicios" data-target="#course-resource-${selectedLevel.id}">
+            Ler caderno SQL aqui
+          </button>
+        </div>
+        <div id="course-resource-${selectedLevel.id}" class="resource-viewer compact" aria-live="polite"></div>
+      </article>
+    </div>
+  `;
+
+  container.querySelectorAll(".course-tab").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.currentCourseLevel = button.dataset.levelId;
+      renderCourseModules();
+    });
+  });
 
   container.querySelectorAll(".course-resource-button").forEach((button) => {
     button.addEventListener("click", () => {
@@ -648,6 +685,15 @@ function syncLabStateFromUrl() {
   }
   if (Number.isInteger(exercise) && exercise > 0) {
     state.currentExercise = Math.min(exercise - 1, getCurrentLevel().exercises.length - 1);
+  }
+}
+
+function syncCourseStateFromHash() {
+  if (document.body.dataset.page !== "trilha") return;
+  if (!window.location.hash.startsWith("#aulas-nivel-")) return;
+  const levelId = window.location.hash.replace("#aulas-", "");
+  if (levels.some((level) => level.id === levelId)) {
+    state.currentCourseLevel = levelId;
   }
 }
 
@@ -1421,6 +1467,7 @@ function redirectLegacyHashRoutes() {
 function initApp() {
   redirectLegacyHashRoutes();
   syncLabStateFromUrl();
+  syncCourseStateFromHash();
   markCurrentPage();
   renderTimeline();
   renderStudyMap();
