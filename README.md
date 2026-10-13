@@ -266,3 +266,12 @@ Sequência recomendada:
 O repositório pode ser publicado como site estático no Vercel. O `.vercelignore`
 exclui `dados/`, `.git/`, `.vercel/` e ambientes locais para evitar publicar o
 banco SQLite local ou arquivos de configuração temporários.
+
+
+## Resiliência e limites
+
+O motor aplica `PRAGMA query_only = ON` após carregar a base fictícia, além da validação de comandos no worker. A validação reconhece comentários sem confundir marcadores dentro de strings SQL. Ela é uma restrição didática, não um parser completo de SQL.
+
+Se o navegador bloquear o armazenamento ou atingir a cota, a interface avisa que não conseguiu salvar. O estudo pode continuar, mas copie as consultas e anotações antes de sair; alterações não salvas não sobrevivem ao recarregamento.
+
+Para conferir essas proteções, teste `SELECT '--texto' AS exemplo`, comentários antes de um `SELECT`, tentativa de `DELETE`, e simule falha de `localStorage.setItem` nas ferramentas de desenvolvimento. A dependência sql.js/WebAssembly continua exigindo conexão e compatibilidade do navegador.
