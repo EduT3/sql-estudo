@@ -335,7 +335,22 @@ const storage = {
     }
   },
   set(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch {
+      // Private mode, full quota or browser policy must not break studying.
+      let aviso = document.getElementById("storage-warning");
+      if (!aviso) {
+        aviso = document.createElement("p");
+        aviso.id = "storage-warning";
+        aviso.setAttribute("role", "status");
+        aviso.className = "sql-message";
+        document.body.prepend(aviso);
+      }
+      aviso.textContent = "O navegador não conseguiu salvar seu progresso. Copie suas anotações antes de sair ou recarregar a página.";
+      return false;
+    }
   },
 };
 
@@ -1484,3 +1499,4 @@ function initApp() {
 }
 
 initApp();
+

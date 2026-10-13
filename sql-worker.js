@@ -6,13 +6,11 @@ let SQL;
 let db;
 
 function stripCommentsAndStrings(sql) {
-  return sql
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .replace(/--.*$/gm, " ")
-    .replace(/'(?:''|[^'])*'/g, "''")
-    .replace(/"(?:[^"]|"")*"/g, '""')
-    .replace(/`(?:[^`]|``)*`/g, "``")
-    .replace(/\[(?:[^\]])*\]/g, "[]");
+  // Consume quoted values before comment markers, including doubled quotes.
+  return sql.replace(
+    /'(?:''|[^'])*'|"(?:""|[^"])*"|`(?:``|[^`])*`|\[[^\]]*\]|\/\*[\s\S]*?\*\/|--[^\r\n]*/g,
+    token => token.startsWith("--") || token.startsWith("/*") ? " " : "''"
+  );
 }
 
 function validateReadOnly(sql) {
@@ -65,6 +63,8 @@ async function createDatabase() {
 
   db = new SQL.Database();
   db.run(await loadSeed());
+  // Enforce read-only operation in SQLite as well as the teaching validator.
+  db.run("PRAGMA query_only = ON");
 }
 
 function getTableCounts() {
@@ -119,3 +119,4 @@ self.onmessage = async (event) => {
     });
   }
 };
+
